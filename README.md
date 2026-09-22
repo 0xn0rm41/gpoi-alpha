@@ -1,419 +1,575 @@
-# gpoi-alpha
-🎓 Student Hub — ISISS Valle Seriana
+# Student Hub
 
-Una piattaforma open source costruita dagli studenti, per gli studenti.
+> Piattaforma open source per la comunità studentesca dell'ISISS Valle Seriana.
 
-Student Hub è una piattaforma digitale dedicata alla comunità studentesca dell'ISISS Valle Seriana, progettata per facilitare lo scambio di conoscenze, materiali scolastici, libri usati, idee e iniziative all'interno dell'istituto.
+Student Hub è una piattaforma digitale progettata per centralizzare strumenti e risorse utili alla vita scolastica: condivisione di materiali didattici, compravendita di libri usati, gestione di eventi, raccolta di proposte e consultazioni studentesche.
 
-L'obiettivo è creare un hub digitale unico per la vita scolastica, dove gli studenti possano collaborare, condividere risorse e partecipare più attivamente alla vita dell'istituto.
+Il progetto nasce con un approccio **open source** e **community-driven**: la piattaforma è pensata dagli studenti e per gli studenti, con l'obiettivo di creare uno spazio digitale organizzato, accessibile e specifico per la comunità dell'istituto.
 
-🚀 Obiettivi del progetto
+---
 
-La piattaforma nasce con alcuni obiettivi principali:
+## Indice
 
-📚 Facilitare lo scambio di appunti e materiale didattico.
+* [Obiettivi](#obiettivi)
+* [Funzionalità](#funzionalità)
 
-📖 Permettere agli studenti di vendere e acquistare libri scolastici usati.
+  * [Materiali didattici](#materiali-didattici)
+  * [Marketplace](#marketplace)
+  * [Eventi](#eventi)
+  * [Idee e proposte](#idee-e-proposte)
+  * [Sondaggi](#sondaggi)
+* [Utenti e ruoli](#utenti-e-ruoli)
+* [Architettura concettuale](#architettura-concettuale)
+* [Privacy e sicurezza](#privacy-e-sicurezza)
+* [Moderazione](#moderazione)
+* [Open Source](#open-source)
+* [Adozione e obiettivi](#adozione-e-obiettivi)
+* [Metriche](#metriche)
+* [Roadmap](#roadmap)
+* [Visione futura](#visione-futura)
+* [Contribuire](#contribuire)
+* [Licenza](#licenza)
 
-🎉 Organizzare e pubblicizzare eventi interni all'istituto.
+---
 
-💡 Raccogliere idee e proposte degli studenti.
+## Obiettivi
 
-📊 Creare sondaggi e consultazioni interne.
+Student Hub nasce per affrontare un problema semplice: molte delle attività digitali degli studenti sono distribuite tra strumenti differenti e non collegati tra loro.
 
-🤝 Favorire la collaborazione tra studenti di classi e indirizzi differenti.
+La piattaforma mira a:
 
-🌐 Creare uno spazio digitale appartenente alla comunità studentesca.
+* facilitare la condivisione di appunti e materiale didattico;
+* organizzare le risorse per materia, classe e anno scolastico;
+* facilitare la compravendita di libri scolastici usati;
+* raccogliere e organizzare gli eventi della comunità studentesca;
+* permettere agli studenti di presentare idee e proposte;
+* supportare sondaggi e consultazioni interne;
+* favorire la collaborazione tra studenti di classi e indirizzi differenti;
+* creare un archivio consultabile delle attività e delle iniziative studentesche;
+* mantenere il progetto open source e favorire il contributo degli studenti allo sviluppo.
 
-🔓 Mantenere il progetto open source, favorendo la partecipazione degli studenti allo sviluppo.
+L'obiettivo non è creare un ulteriore social network, ma fornire **strumenti strutturati per attività che oggi vengono spesso gestite tramite chat, social network e servizi generalisti**.
 
-🧩 Funzionalità
-📚 Appunti e materiali
+---
 
-Gli studenti possono condividere materiale utile allo studio, come:
+# Funzionalità
 
-appunti;
+## Materiali didattici
 
-schemi;
+La piattaforma permette agli studenti di condividere risorse utili allo studio.
 
-riassunti;
+### Tipologie di contenuto
 
-esercizi;
+* Appunti
+* Schemi
+* Riassunti
+* Esercizi
+* Presentazioni
+* Materiale di approfondimento
+* Altre risorse didattiche
 
-presentazioni;
+I contenuti possono essere organizzati e filtrati utilizzando informazioni come:
 
-materiali di approfondimento.
+* materia;
+* classe;
+* anno scolastico;
+* argomento;
+* tipologia di materiale.
 
-I contenuti possono essere organizzati per:
+L'obiettivo è costruire progressivamente una **biblioteca digitale della comunità studentesca**, in cui le risorse possano essere facilmente trovate anche molto tempo dopo la loro pubblicazione.
 
-materia;
+---
 
-classe;
+## Marketplace
 
-anno scolastico;
+Student Hub include una sezione dedicata alla compravendita di libri scolastici usati.
 
-argomento.
+Gli studenti possono creare annunci contenenti:
 
-L'obiettivo è creare nel tempo una vera e propria biblioteca digitale della comunità studentesca.
+* titolo del libro;
+* autore;
+* ISBN, quando disponibile;
+* prezzo;
+* condizioni;
+* fotografie;
+* materia;
+* classe;
+* eventuali informazioni aggiuntive.
 
-📖 Mercatino dei libri usati
+Gli utenti possono:
 
-Una sezione dedicata alla compravendita di libri scolastici usati.
+* cercare libri;
+* filtrare gli annunci;
+* visualizzare i dettagli;
+* contattare il venditore;
+* segnalare un annuncio.
 
-Gli studenti possono:
+### Pagamenti
 
-pubblicare un libro in vendita;
+La piattaforma non deve necessariamente gestire direttamente i pagamenti.
 
-indicare prezzo e condizioni;
+Nella fase iniziale, la compravendita può essere concordata direttamente tra acquirente e venditore.
 
-aggiungere foto;
+Eventuali sistemi di pagamento integrati potranno essere valutati separatamente in futuro.
 
-specificare classe e materia;
+---
 
-cercare libri pubblicati da altri studenti;
+## Eventi
 
-contattare il venditore.
-
-La piattaforma non deve necessariamente gestire direttamente i pagamenti: la compravendita può essere organizzata tra gli studenti secondo modalità concordate.
-
-🎉 Eventi
-
-Una sezione dedicata agli eventi organizzati all'interno della comunità scolastica.
+La sezione eventi permette di raccogliere in un unico luogo le iniziative rivolte alla comunità scolastica.
 
 Esempi:
 
-tornei;
+* tornei;
+* assemblee;
+* attività studentesche;
+* incontri;
+* iniziative culturali;
+* eventi organizzati dagli studenti.
 
-assemblee;
+Ogni evento può includere:
 
-attività studentesche;
+* titolo;
+* descrizione;
+* data e ora;
+* luogo;
+* organizzatore;
+* numero massimo di partecipanti;
+* iscrizione;
+* stato dell'evento.
 
-incontri;
+Una vista calendario può permettere di consultare rapidamente gli eventi imminenti.
 
-iniziative culturali;
+---
 
-eventi organizzati dagli studenti.
+## Idee e proposte
 
-Ogni evento può contenere:
+Gli studenti possono pubblicare proposte relative alla vita scolastica.
 
-titolo;
+Le proposte possono essere:
 
-descrizione;
+* visualizzate;
+* votate;
+* commentate;
+* discusse;
+* seguite dagli utenti.
 
-data e ora;
+Ogni proposta può avere uno stato, ad esempio:
 
-luogo;
+```text
+Proposta
+   ↓
+In valutazione
+   ↓
+Approvata
+   ↓
+In realizzazione
+   ↓
+Realizzata
+```
 
-organizzatore;
+La gestione degli stati dovrebbe essere affidata agli utenti autorizzati, in base al modello di moderazione e amministrazione scelto dal progetto.
 
-numero di partecipanti;
+---
 
-eventuale sistema di iscrizione.
+## Sondaggi
 
-💡 Idee
+La piattaforma può supportare la creazione di sondaggi e consultazioni rivolte alla comunità studentesca.
 
-Uno spazio in cui gli studenti possono proporre nuove idee per migliorare la vita scolastica.
+Possibili utilizzi:
 
-Gli altri utenti possono:
+* preferenze relative agli eventi;
+* raccolta di opinioni;
+* consultazioni su iniziative;
+* scelta tra diverse proposte;
+* raccolta di feedback.
 
-visualizzare le proposte;
+I risultati possono essere rappresentati attraverso:
 
-votarle;
+* percentuali;
+* grafici;
+* conteggi;
+* statistiche aggregate.
 
-commentarle;
+La gestione dell'anonimato e della visibilità dei risultati deve essere definita per ogni tipologia di sondaggio.
 
-proporre modifiche;
+---
 
-seguire lo stato di una proposta.
+# Utenti e ruoli
 
-Le idee potrebbero avere diversi stati:
+Il principale gruppo di utenti è costituito dagli studenti dell'ISISS Valle Seriana.
 
-Proposta → In valutazione → Approvata → Realizzata
+## Studenti
 
-📊 Sondaggi
+Possono:
 
-La piattaforma permette di creare sondaggi rivolti alla comunità studentesca.
+* consultare e pubblicare materiali;
+* pubblicare e cercare libri;
+* partecipare agli eventi;
+* creare o seguire proposte;
+* votare;
+* partecipare ai sondaggi;
+* segnalare contenuti;
+* contribuire allo sviluppo del progetto.
 
-Esempi:
+## Ruoli futuri
 
-preferenze per eventi;
+In una fase successiva potranno essere introdotti ruoli aggiuntivi, ad esempio:
 
-proposte per attività scolastiche;
+* rappresentanti degli studenti;
+* organizzatori di eventi;
+* associazioni studentesche;
+* docenti;
+* personale scolastico;
+* moderatori;
+* amministratori.
 
-raccolta di opinioni;
+I permessi dovranno essere definiti attraverso un sistema di controllo degli accessi basato sui ruoli.
 
-consultazioni degli studenti;
+---
 
-scelta tra diverse proposte.
+# Architettura concettuale
 
-I risultati possono essere visualizzati attraverso grafici e statistiche.
+La piattaforma può essere organizzata nei seguenti moduli principali:
 
-👥 Target
-
-Il principale target del progetto è costituito dagli studenti dell'ISISS Valle Seriana.
-
-Utenti principali
-
-Studenti
-
-Utilizzano la piattaforma per:
-
-condividere materiale;
-
-acquistare e vendere libri;
-
-partecipare agli eventi;
-
-proporre idee;
-
-rispondere ai sondaggi.
-
-Utenti secondari
-
-In una fase successiva la piattaforma potrebbe coinvolgere:
-
-rappresentanti degli studenti;
-
-associazioni studentesche;
-
-organizzatori di eventi;
-
-docenti;
-
-personale scolastico;
-
-amministratori della piattaforma.
-
-Il coinvolgimento di queste categorie dovrebbe essere progettato separatamente, mantenendo comunque il focus principale sugli studenti.
-
-🏗️ Struttura concettuale
-
-La piattaforma può essere suddivisa in diversi moduli:
-
+```text
 Student Hub
 │
-├── 📚 Materiali
-│   ├── Appunti
-│   ├── Schemi
-│   └── Risorse
+├── Materials
+│   ├── Notes
+│   ├── Summaries
+│   ├── Exercises
+│   └── Resources
 │
-├── 📖 Marketplace
-│   ├── Libri
-│   ├── Ricerca
-│   └── Annunci
+├── Marketplace
+│   ├── Books
+│   ├── Listings
+│   ├── Search
+│   └── Contact
 │
-├── 🎉 Eventi
-│   ├── Calendario
-│   ├── Eventi
-│   └── Partecipazioni
+├── Events
+│   ├── Calendar
+│   ├── Events
+│   └── Registrations
 │
-├── 💡 Idee
-│   ├── Proposte
-│   ├── Votazioni
-│   └── Commenti
+├── Ideas
+│   ├── Proposals
+│   ├── Votes
+│   ├── Comments
+│   └── Status
 │
-└── 📊 Sondaggi
-    ├── Sondaggi attivi
-    ├── Votazioni
-    └── Risultati
+└── Polls
+    ├── Active Polls
+    ├── Votes
+    └── Results
+```
 
-🔐 Privacy e sicurezza
+Questa struttura rappresenta l'organizzazione funzionale del progetto e non vincola necessariamente l'implementazione tecnica.
 
-Essendo una piattaforma destinata a studenti, privacy e sicurezza devono essere considerati requisiti fondamentali.
+---
 
-Il progetto dovrebbe prevedere:
+# Privacy e sicurezza
 
-autenticazione sicura;
+La sicurezza è un requisito fondamentale del progetto, considerando che la piattaforma è destinata anche a studenti minorenni.
 
-controllo degli accessi;
+Il sistema dovrebbe adottare, tra gli altri, i seguenti principi:
 
-protezione dei dati personali;
+* minimizzazione dei dati raccolti;
+* autenticazione sicura;
+* gestione dei ruoli e dei permessi;
+* protezione delle informazioni personali;
+* validazione degli input;
+* protezione da spam e abuso;
+* logging degli eventi di sicurezza rilevanti;
+* gestione delle segnalazioni;
+* moderazione dei contenuti;
+* procedure per la gestione degli account;
+* cancellazione dei dati non più necessari.
 
-possibilità di segnalare contenuti;
+Particolare attenzione deve essere dedicata agli obblighi applicabili in materia di protezione dei dati personali e alla gestione dei dati relativi a utenti minorenni.
 
-moderazione;
+Le decisioni relative alla raccolta, conservazione e trattamento dei dati dovranno essere definite prima del rilascio pubblico della piattaforma.
 
-sistemi anti-spam;
+---
 
-gestione dei contenuti inappropriati;
+# Moderazione
 
-minimizzazione dei dati raccolti.
+Una piattaforma utilizzata da una comunità scolastica necessita di strumenti per la gestione dei contenuti generati dagli utenti.
 
-Particolare attenzione dovrà essere dedicata agli utenti minorenni e alla normativa applicabile in materia di protezione dei dati personali.
+Le funzionalità previste possono includere:
 
-🌱 Open Source
+* segnalazione di contenuti;
+* segnalazione di utenti;
+* rimozione dei contenuti non conformi;
+* gestione degli annunci;
+* gestione dei commenti;
+* strumenti anti-spam;
+* storico delle azioni di moderazione;
+* eventuale sistema di sospensione degli account.
 
-Il progetto nasce con una filosofia open source.
+Le regole di moderazione dovranno essere documentate pubblicamente e applicate secondo criteri chiari e coerenti.
 
-Questo significa che il codice sorgente è accessibile e che gli studenti interessati possono contribuire allo sviluppo.
+---
 
-Possibili aree di contribuzione:
+# Open Source
 
-sviluppo frontend;
+Student Hub è sviluppato secondo una filosofia open source.
 
-sviluppo backend;
+Il codice sorgente deve rimanere accessibile e il progetto deve permettere agli studenti interessati di contribuire allo sviluppo.
 
-UI/UX design;
+Le possibili aree di contribuzione includono:
 
-sicurezza;
+* frontend;
+* backend;
+* database;
+* UI/UX;
+* accessibilità;
+* sicurezza;
+* testing;
+* documentazione;
+* DevOps;
+* moderazione;
+* nuove funzionalità.
 
-documentazione;
+Il processo di contribuzione previsto è:
 
-testing;
+```text
+Fork
+  ↓
+Nuovo branch
+  ↓
+Implementazione
+  ↓
+Test
+  ↓
+Pull Request
+  ↓
+Code Review
+  ↓
+Merge
+```
 
-moderazione;
+Le linee guida tecniche per contribuire al repository dovranno essere documentate in `CONTRIBUTING.md`.
 
-nuove funzionalità.
+---
 
-Contribuire
+# Adozione e obiettivi
 
-Effettua un fork del repository.
+Student Hub è progettato inizialmente per una singola comunità scolastica.
 
-Crea un nuovo branch.
+Il valore della piattaforma dipende quindi principalmente dalla sua utilità all'interno dell'istituto, piuttosto che dal numero assoluto di utenti.
 
-Implementa le modifiche.
+Un possibile effetto di rete locale è:
 
-Esegui i test.
-
-Crea una Pull Request.
-
-Descrivi chiaramente le modifiche effettuate.
-
-📈 Analisi di mercato
-Problema
-
-Gli studenti utilizzano già diversi strumenti per comunicare e condividere informazioni:
-
-gruppi di messaggistica;
-
-social network;
-
-cloud storage;
-
-marketplace generalisti;
-
-piattaforme per appunti;
-
-strumenti per sondaggi.
-
-Il problema è che queste soluzioni sono frammentate.
-
-Un gruppo può essere utile per comunicare velocemente, ma diventa difficile trovare un appunto pubblicato settimane prima.
-
-Un marketplace può essere efficace per vendere un libro, ma non è progettato per la comunità di uno specifico istituto.
-
-Un servizio per sondaggi permette di raccogliere voti, ma non crea una comunità scolastica.
-
-Student Hub prova quindi a riunire queste necessità in un unico ambiente.
-
-🎯 Posizionamento
-
-Il progetto non vuole necessariamente competere direttamente con grandi piattaforme generaliste.
-
-Il suo posizionamento è quello di una:
-
-piattaforma digitale verticale per la comunità studentesca di un singolo istituto.
-
-Il valore principale non deriva quindi dal numero assoluto di utenti, ma dalla concentrazione degli utenti appartenenti alla stessa comunità.
-
-Questo crea un effetto di rete locale:
-
+```text
 Più studenti
-     ↓
+      ↓
 Più contenuti
-     ↓
-Più utilità della piattaforma
-     ↓
-Più studenti interessati a utilizzarla
-     ↓
-Più contenuti
+      ↓
+Maggiore utilità
+      ↓
+Maggiore utilizzo
+      ↓
+Più studenti
+```
 
-📍 Locale
+Per favorire l'adozione, la piattaforma deve offrire funzionalità che siano difficili da gestire efficacemente attraverso strumenti generici.
 
-La piattaforma è pensata specificamente per l'ISISS Valle Seriana.
+In particolare:
 
-🤝 Comunitaria
+* ricerca strutturata degli appunti;
+* archivio dei materiali;
+* catalogo dei libri;
+* calendario degli eventi;
+* archivio delle proposte;
+* consultazioni organizzate.
 
-Il valore viene creato direttamente dagli studenti.
+Il progetto dovrebbe evitare di replicare semplicemente le funzionalità di un social network.
 
-Adozione
+---
 
-Gli studenti utilizzano già strumenti che conoscono.
+# Metriche
 
-Per convincerli a utilizzare una nuova piattaforma deve esserci un vantaggio concreto.
+Per valutare l'utilità della piattaforma possono essere monitorate metriche aggregate come:
 
-Per questo la piattaforma dovrebbe evitare di essere semplicemente "un altro social network".
+### Utilizzo
 
-La domanda fondamentale dovrebbe essere:
+* utenti registrati;
+* utenti attivi settimanalmente;
+* utenti attivi mensilmente;
+* tasso di ritorno degli utenti.
 
-"Perché uno studente dovrebbe aprire questa piattaforma invece di usare il gruppo della propria classe?"
+### Materiali
 
-La risposta deve essere rappresentata da funzionalità che i gruppi di messaggistica non gestiscono bene: ricerca e organizzazione degli appunti, catalogo dei libri, archivio delle proposte, calendario degli eventi e consultazioni strutturate.
+* materiali pubblicati;
+* visualizzazioni;
+* download;
+* materiali per materia.
 
+### Marketplace
 
-🧪 Metriche da monitorare
+* annunci pubblicati;
+* annunci attivi;
+* libri venduti;
+* ricerche effettuate.
 
-Per capire se il progetto sta realmente creando valore, alcune metriche utili potrebbero essere:
+### Eventi
 
-utenti registrati;
+* eventi creati;
+* partecipazioni;
+* iscrizioni;
+* eventi completati.
 
-utenti attivi settimanali;
+### Idee
 
-numero di appunti pubblicati;
+* proposte pubblicate;
+* voti;
+* commenti;
+* proposte completate.
 
-numero di libri pubblicati;
+### Sondaggi
 
-numero di libri venduti;
+* sondaggi pubblicati;
+* partecipazioni;
+* percentuale di completamento.
 
-numero di eventi creati;
+Una delle metriche principali può essere la:
 
-partecipazioni agli eventi;
+> **percentuale di studenti dell'istituto che utilizza attivamente la piattaforma almeno una volta al mese.**
 
-numero di idee pubblicate;
+Le metriche dovrebbero essere raccolte nel rispetto dei principi di minimizzazione e protezione dei dati personali.
 
-numero di voti;
+---
 
-numero di sondaggi completati;
+# Roadmap
 
-tasso di ritorno degli utenti.
+La roadmap definitiva verrà definita durante lo sviluppo del progetto.
 
-Una metrica particolarmente interessante potrebbe essere:
+Una possibile suddivisione è:
 
-percentuale di studenti dell'istituto che utilizzano attivamente la piattaforma almeno una volta al mese.
+## Phase 1 — Foundation
 
-🔮 Visione futura
+* [ ] Setup del repository
+* [ ] Architettura iniziale
+* [ ] Autenticazione
+* [ ] Gestione utenti
+* [ ] Database
+* [ ] Sistema di ruoli e permessi
 
-L'obiettivo a lungo termine non è semplicemente creare un sito per condividere appunti.
+## Phase 2 — Core Features
 
-La visione è creare una piattaforma che rappresenti una sorta di infrastruttura digitale della comunità studentesca.
+* [ ] Materiali didattici
+* [ ] Ricerca
+* [ ] Marketplace libri
+* [ ] Eventi
+* [ ] Idee e proposte
+* [ ] Sondaggi
 
-Un luogo in cui uno studente possa:
+## Phase 3 — Community
 
-📚 trovare materiale
+* [ ] Commenti
+* [ ] Votazioni
+* [ ] Segnalazioni
+* [ ] Moderazione
+* [ ] Notifiche
+* [ ] Calendario
+
+## Phase 4 — Hardening
+
+* [ ] Security review
+* [ ] Test automatici
+* [ ] Performance testing
+* [ ] Accessibilità
+* [ ] Documentazione
+* [ ] Privacy review
+
+## Phase 5 — Public Release
+
+* [ ] Beta testing
+* [ ] Feedback degli studenti
+* [ ] Correzione dei problemi
+* [ ] Prima release stabile
+
+---
+
+# Visione futura
+
+L'obiettivo a lungo termine è trasformare Student Hub in un'infrastruttura digitale per la comunità studentesca.
+
+La piattaforma dovrebbe permettere a uno studente di:
+
+```text
+📚 Trovare materiale
         +
-📖 comprare un libro
+📖 Cercare un libro
         +
-🎉 scoprire un evento
+🎉 Scoprire un evento
         +
-💡 proporre un'idea
+💡 Proporre un'idea
         +
-📊 partecipare a un sondaggio
+📊 Partecipare a un sondaggio
         ↓
-   🏫 VIVERE LA SCUOLA
+      🏫
+   VIVERE LA SCUOLA
+```
 
+Se il progetto dovesse dimostrarsi efficace all'interno dell'ISISS Valle Seriana, l'architettura potrebbe essere successivamente adattata ad altri istituti.
 
-Se il modello dimostrasse di funzionare all'interno dell'ISISS Valle Seriana, il progetto potrebbe successivamente essere adattato ad altri istituti, mantenendo la propria natura open source.
+L'obiettivo sarebbe mantenere il progetto:
 
-📄 Licenza
+* open source;
+* modulare;
+* configurabile;
+* indipendente dall'istituto;
+* riutilizzabile da altre comunità scolastiche.
 
-Il progetto è distribuito come software open source.
+---
 
-La licenza definitiva verrà scelta dal team di sviluppo prima della prima release pubblica.
+# Contribuire
 
-🤝 Contributi
+I contributi sono benvenuti.
 
-Contributi, idee e segnalazioni sono benvenuti.
+Prima di iniziare a lavorare sul progetto, consulta la documentazione relativa allo sviluppo e alle linee guida per i contributor.
 
-Se sei uno studente dell'istituto e vuoi contribuire al progetto, puoi partecipare allo sviluppo, proporre nuove funzionalità, segnalare problemi o aiutare nella moderazione della piattaforma.
+Un contributo può riguardare:
 
-Built by students, for students. 🎓
+* una nuova funzionalità;
+* un bug fix;
+* un miglioramento dell'interfaccia;
+* un test;
+* la documentazione;
+* l'accessibilità;
+* la sicurezza;
+* una proposta progettuale.
+
+Per modifiche significative è consigliato aprire una issue prima di iniziare l'implementazione, così da discutere l'approccio con gli altri contributor.
+
+---
+
+# Licenza
+
+La licenza definitiva del progetto verrà scelta dal team di sviluppo prima della prima release pubblica.
+
+Fino ad allora, il repository non deve essere considerato automaticamente distribuito sotto una specifica licenza open source.
+
+---
+
+# Stato del progetto
+
+**Status:** 🚧 In development
+
+Student Hub è attualmente in fase di progettazione e sviluppo.
+
+Le funzionalità, l'architettura e le specifiche descritte in questo documento possono cambiare durante lo sviluppo.
+
+---
+
+<div align="center">
+
+**Student Hub**
+
+*Built by students, for students.*
+
+🎓
+
+</div>
