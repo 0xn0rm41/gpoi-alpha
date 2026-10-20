@@ -1,57 +1,102 @@
-STUDENT HUB — STRATEGIA DI VALIDAZIONE E ANALISI DELLO SCENARIO
-Linee guida per l'analisi dei bisogni e la validazione funzionale della piattaforma digitale dell'ISISS Valle Seriana.
-Questo documento definisce il percorso metodologico e gli strumenti scelti per analizzare le necessità degli studenti, testare l'efficacia delle soluzioni proposte e guidare lo sviluppo di Student Hub attraverso dati concreti e riscontri reali della comunità scolastica.
-INDICE DEI CONTENUTI
-• Obiettivi strategici dell'analisi
-• Modelli di riferimento e framework operativi
-• Vincoli e sfide del contesto scolastico
-• Fasi del processo di validazione
-• Mappatura degli strumenti digitali
-• Stato di avanzamento delle attività
-OBIETTIVI STRATEGICI DELL'ANALISI
-A differenza delle tradizionali ricerche di mercato orientate al profitto, lo studio per Student Hub si concentra esclusivamente sull'utilità sociale e comunitaria, con i seguenti scopi:
-• Mappare i bisogni prioritari: comprendere quali servizi, tra mercatino dei libri, condivisione degli appunti e gestione degli eventi, siano percepiti come più urgenti e necessari dagli studenti.
-• Centralizzare i flussi frammentati: analizzare i comportamenti attuali per trasferire in modo efficiente le attività oggi disperse su chat di classe e social network generalisti verso uno spazio web organizzato.
-• Ottimizzare lo sviluppo software: validare l'interesse reale verso una specifica funzionalità prima di procedere alla scrittura del codice, riducendo lo spreco di tempo e risorse tecniche.
-• Assicurare l'inclusione digitale: individuare e superare le barriere tecnologiche, culturali o anagrafiche tra i diversi indirizzi di studio dell'istituto per garantire parità di accesso.
-MODELLI DI RIFERIMENTO E FRAMEWORK OPERATIVI
-L'analisi adotta metodologie strutturate derivate dal design dei servizi e dallo studio del comportamento dell'utente, declinate per la realtà scolastica:
-• Jobs to Be Done (JTBD): focus sul compito pratico che lo studente intende risolvere. Non ci si limita a profilare l'utente, ma si analizza l'esigenza specifica, come ad esempio riuscire ad acquistare il libro di testo per il nuovo anno scolastico al minor prezzo e senza intermediari.
-• Analisi SWOT: mappatura dei fattori interni, come il valore della community open source e dei contributori, e dei fattori di rischio esterni, quali la resistenza al cambiamento delle abitudini consolidate o i rigorosi vincoli di privacy.
-• Segmentazione degli utenti: suddivisione della popolazione scolastica in gruppi con esigenze distinte, distinguendo tra studenti del biennio, studenti del triennio, rappresentanti d'istituto e personale docente.
-• Design Thinking: un approccio iterativo incentrato sull'empatia con l'utente finale, che prevede sessioni di ascolto e la progettazione collaborativa dei flussi d'uso.
-Tutti gli approfondimenti teorici sui modelli applicati sono disponibili per la consultazione all'interno della cartella docs/analisi_mercato/.
-VINCOLI E SFIDE DEL CONTESTO SCOLASTICO
-La raccolta dei dati all'interno dell'ISISS Valle Seriana deve tenere conto di tre specifiche complessità metodologiche:
-1. Polarizzazione del campione: gli studenti con competenze digitali più avanzate tendono a partecipare con maggiore frequenza alle consultazioni. È necessario adottare strategie specifiche per intercettare anche i bisogni di chi utilizza meno gli strumenti digitali.
-2. Tutela della privacy e dei minori: la massiccia presenza di utenti minorenni impone standard di sicurezza elevatissimi. Ogni attività di feedback o di analisi d'uso deve escludere il tracciamento dei dati personali e operare in totale conformità con i requisiti del GDPR.
-3. Equilibrio tra tempestività e accuratezza: la necessità di fornire risposte rapide alle esigenze della scuola deve sempre coordinarsi con il rigore dei test di usabilità per evitare il rilascio di funzioni incomplete.
-FASI DEL PROCESSO DI VALIDAZIONE
-Il ciclo di sviluppo della piattaforma è strettamente legato a un percorso di validazione strutturato in cinque fasi sequenziali:
-Fase 1 — Discovery (Esplorazione)
-• Scopo: accertare l'esistenza di un problema reale e comprenderne le dinamiche.
-• Attività: conduzione di interviste individuali, analisi dei canali di comunicazione già utilizzati dalle classi e tracciamento delle tematiche più discusse.
-Fase 2 — Validazione del Concetto
-• Scopo: verificare l'interesse della community verso una soluzione prima di svilupparla.
-• Attività: distribuzione di sondaggi mirati e applicazione di test di rilevanza, ad esempio analizzando l'interazione degli utenti con elementi grafici preliminari per valutare la reale richiesta di un modulo prima di scriverne il codice.
-Fase 3 — Sviluppo e Testing dell'Usabilità
-• Scopo: valutare l'esperienza d'uso direttamente sulle versioni preliminari del software.
-• Attività: sessioni di test guidati con piccoli gruppi di studenti in veste di early adopters e analisi dei flussi di navigazione per correggere eventuali problemi di interfaccia.
-Fase 4 — Rilascio e Monitoraggio dell'Adozione
-• Scopo: distribuire i moduli all'intera scuola e misurare l'efficacia dell'integrazione.
-• Attività: monitoraggio del processo di registrazione, analisi dei tassi di utilizzo e raccolta strutturata delle segnalazioni di errore.
-Fase 5 — Iterazione e Scalabilità
-• Scopo: perfezionare costantemente la piattaforma e pianificare l'estensione del modello.
-• Attività: organizzazione delle priorità di sviluppo nel backlog in base ai dati di utilizzo reali e studio della modularità del codice per consentirne il riutilizzo in altri istituti scolastici.
-MAPPATURA DEGLI STRUMENTI DIGITALI
-A ogni fase del processo corrisponde una selezione di strumenti digitali scelti per garantire precisione nell'analisi e rispetto della riservatezza:
-• Fase di Discovery: l'analisi dei trend di ricerca e le interviste a distanza permettono di definire la domanda latente, le principali necessità degli studenti e la terminologia di riferimento.
-• Fase di Validazione: l'uso di moduli di contatto e pagine di test temporanee serve a misurare l'interesse reale della community e la propensione all'utilizzo dei nuovi servizi.
-• Fase di Testing: l'impiego di piattaforme di analisi web prive di tracciamento personale (come Matomo configurato per il rispetto della privacy) e i test d'uso diretti consentono di valutare le prestazioni tecniche e la fluidità dei passaggi.
-• Fase di Lancio: i moduli interni per i messaggi di feedback e i canali di comunicazione istituzionali della scuola registrano il grado di soddisfazione degli utenti e le anomalie tecniche riscontrate.
-• Fase di Iterazione: l'integrazione di basi dati strutturate, query SQL e pannelli di controllo permette di monitorare l'andamento nel tempo del tasso di fidelizzazione degli utenti e l'intensità delle interazioni.
-STATO DI AVANZAMENTO DELLE ATTIVITÀ
-Stato attuale: Fase di Ricerca e Validazione
-L'attività di analisi si sta svolgendo in parallelo con la definizione dei requisiti tecnici iniziali della piattaforma. I dati che emergeranno da questa fase guideranno in modo diretto la progettazione logica dei moduli software.
-Student Hub — Analytics e Strategy
-Sviluppo guidato dai dati per la nostra comunità scolastica.
+
+RICERCA DI MERCATO — STUDENT HUB
+
+v0.1.0 - 20-10-2026
+La ricerca di mercato per Student Hub è un processo sistematico di raccolta, analisi e interpretazione di informazioni relative alla comunità scolastica dell'ISISS Valle Seriana, ai suoi studenti (utenti) e alle soluzioni alternative attualmente utilizzate per la gestione della vita scolastica. L'obiettivo principale della ricerca è comprendere le dinamiche interne all'istituto, identificare opportunità e colli di bottiglia, e supportare le decisioni strategiche del team di sviluppo.
+Soprattutto in ambito scolastico e comunitario è un processo ibrido che combina metodi tradizionali di ascolto con strumenti digitali avanzati, che consentono di raccogliere dati sul campo, analizzare le interazioni tra classi e ottenere insight più approfonditi sulle necessità reali degli studenti.
+• Teoria accademica: La ricerca applicata a Student Hub si occupa di comprendere il comportamento degli utenti in un contesto formativo e le dinamiche di adozione delle piattaforme digitali comunitarie. JTBD, Diffusion, TAM, Value Proposition, SWOT Analysis, Market Segmentation, Consumer Behavior, Competitive Analysis, Market Trends, Community Perception, Analytics, Survey Research, ...
+Per approfondire la teoria accademica applicata alla piattaforma: docs/analisi_mercato/THEORY.md
+• Framework Operativi: La ricerca di mercato per questo progetto può essere condotta utilizzando una varietà di framework operativi, che forniscono una struttura per raccogliere e analizzare i dati della scuola. Alcuni dei framework più comuni includono:
+	1. SWOT Analysis (Strengths, Weaknesses, Opportunities, Threats): Questo framework aiuta a identificare i punti di forza e di debolezza interni al team di sviluppo e alla community open source, nonché le opportunità e le minacce esterne nel contesto scolastico.
+	2. Porter's Five Forces (Adattato): Questo framework esamina le forze esterne che influenzano l'adozione della piattaforma da parte dell'istituto: la minaccia di nuovi strumenti alternativi, il potere contrattuale dei rappresentanti e dell'amministrazione, il potere d'uso degli studenti, la frammentazione in canali generalisti e la rivalità tra soluzioni non coordinate.
+	3. Market Segmentation: Questo framework suddivide la popolazione scolastica in segmenti distinti di utenti con caratteristiche e bisogni simili (es. studenti del biennio, studenti del triennio, rappresentanti d'istituto, docenti), consentendo di adattare le funzionalità e la comunicazione a ciascun segmento.
+	4. Student Behavior Analysis: Questo framework si concentra sull'analisi delle abitudini, delle preferenze e dei comportamenti degli studenti, al fine di comprendere meglio le loro esigenze e motivazioni (es. come scambiano i libri, come cercano gli appunti).
+	5. Platform Perception Analysis: Questo framework valuta come gli studenti percepiscono Student Hub rispetto agli strumenti tradizionali e ai social network generalisti, identificando punti di forza e debolezza nella strategia di adozione.
+	6. School Trends Analysis: Questo framework esamina le tendenze emergenti all'interno dell'istituto, come i cambiamenti nelle preferenze tecnologiche degli studenti, le innovazioni didattiche e le nuove necessità della comunità scolastica.
+	7. Social & Chat Analytics: Questo framework utilizza strumenti di analisi dei canali di comunicazione esistenti per monitorare le interazioni online, identificare gli studenti più attivi e valutare l'efficacia delle campagne di lancio interne.
+	8. Survey Research: Questo framework utilizza sondaggi e questionari per raccogliere dati direttamente dagli studenti, consentendo al team di ottenere feedback e insight sulle loro esperienze e opinioni.
+	9. JTBD (Jobs to Be Done): Questo framework si concentra sull'identificazione dei "lavori" che gli studenti cercano di svolgere con un prodotto o servizio (es. acquistare un libro scolastico usato o trovare gli schemi per una verifica), aiutando a sviluppare moduli più mirati e innovativi.
+	10. Design Thinking: Questo framework si basa su un approccio creativo e iterativo per risolvere problemi complessi della vita scolastica, mettendo l'accento sull'empatia con gli studenti e sulla prototipazione rapida di soluzioni e interfacce.
+	11. Lean Startup: Questo framework si concentra sull'adozione di un approccio snello e iterativo per lo sviluppo di nuovi moduli e funzionalità della piattaforma, incoraggiando il team a testare rapidamente le idee sul campo e adattarsi in base ai feedback degli studenti.
+Per approfondire i framework operativi applicati alla piattaforma: docs/analisi_mercato/FRAMEWORKS.md
+• Strumenti Digitali: Oltre alla raccolta dati sul campo, vari strumenti digitali avanzati possono essere utilizzati per analizzare i dati raccolti e ottenere insight più approfonditi sul comportamento d'uso. Alcuni degli strumenti digitali più comuni includono:
+	1. Privacy-Compliant Web Analytics (es. Matomo / GA4 anonimizzato): Questo strumento consente di monitorare il traffico della piattaforma, analizzare il comportamento degli utenti e identificare le sezioni e i moduli più efficaci.
+	2. Community Monitoring Tools: Questi strumenti consentono di monitorare le conversazioni sui canali della community, identificare i flussi di informazione e valutare l'efficacia delle iniziative di Student Hub.
+	3. User Relationship Management (CRM) Software: Questi strumenti aiutano a gestire le interazioni con gli studenti registrati, raccogliere dati sui moduli utilizzati e analizzare le tendenze d'uso nel tempo.
+	4. Data Visualization Tools: Questi strumenti consentono di creare visualizzazioni interattive dei dati raccolti (es. download di appunti o annunci attivi), facilitando l'interpretazione e la comunicazione dei risultati all'istituto.
+	5. Survey Platforms: Queste piattaforme consentono di creare e distribuire sondaggi online agli studenti, raccogliere risposte dalla scuola e analizzare i dati in modo efficiente.
+	6. A/B Testing Tools: Questi strumenti consentono di testare diverse varianti di un modulo o dell'interfaccia grafica per determinare quale opzione produce i migliori risultati in termini di facilità d'uso ed engagement.
+	7. Heatmap Tools: Questi strumenti consentono di visualizzare il comportamento visivo degli utenti sulle schermate della piattaforma, identificando le aree più cliccate e le sezioni che attirano maggiormente l'attenzione.
+	8. Feedback Analysis Tools: Questi strumenti utilizzano tecniche di classificazione del testo per analizzare i feedback e i commenti degli utenti, identificando opinioni positive, negative o segnalazioni di bug sui moduli della piattaforma.
+	9. Competitive Intelligence Tools: Questi strumenti consentono di monitorare le soluzioni digitali alternative o i servizi generalisti, analizzare le loro dinamiche e identificare opportunità di differenziazione per Student Hub.
+	10. Predictive Analytics Tools: Questi strumenti utilizzano modelli statistici per prevedere le tendenze future del mercato scolastico (es. i picchi di ricerca dei libri usati o la stagionalità degli appunti) e il comportamento degli utenti, supportando lo sviluppo strategico della roadmap.
+
+Sfide Teoriche e Pratiche del Contesto Digitale Scolastico
+
+La ricerca applicata a una comunità scolastica presenta diverse sfide teoriche e pratiche che il team deve affrontare per ottenere risultati accurati e significativi:
+1. Bias del campione digitale scolastico: La raccolta dei dati online può introdurre bias nel campione, poiché gli studenti del triennio o i rappresentanti potrebbero essere più attivi rispetto agli studenti del biennio o a specifici indirizzi di studio, influenzando la validità dei risultati della ricerca.
+2. Privacy e protezione dei dati dei minori: La raccolta e l'analisi dei dati sollevano profonde preoccupazioni sulla privacy e sulla protezione dei dati personali. Il progetto deve garantire la conformità totale al GDPR, trattando con estrema cautela i dati relativi a utenti minorenni e adottando pratiche etiche e trasparenti.
+3. Velocità Vs Profondità: La disponibilità di feedback in tempo reale può portare a una pressione per ottenere risultati rapidi nello sviluppo dei moduli, ma ciò potrebbe compromettere la profondità e l'accuratezza dei test di usabilità. Bisogna bilanciare la velocità di rilascio con la necessità di approfondimento metodologico.
+4. Dipendenza da canali esterni: L'affidamento eccessivo su piattaforme esterne e social network per la promozione e la prima raccolta dati può limitare la prospettiva della ricerca. Il team deve considerare fonti di dati interne e metodi di ricerca diretta per ottenere una visione completa della vita dell'istituto.
+
+Il Processo
+
+Integrando teoria e pratica, il processo viene strutturato in fasi che accompagnano l'intero ciclo di vita di Student Hub, dalla concezione dei moduli all'implementazione e alla valutazione delle metriche:
+
+Fase 1 - Discovery e definizione del problema:
+
+Obiettivo
+Capire se esiste una reale necessità per un modulo e quale "job" la piattaforma deve risolvere per gli studenti dell'istituto.
+Attività
+• Ricerca secondaria: analisi dei canali di comunicazione interni già esistenti, monitoraggio dei trend di ricerca scolastici, analisi delle soluzioni concorrenti o alternative e studio dei dati demografici interni all'ISISS Valle Seriana.
+• Interviste qualitative per esplorare bisogni latenti, pain points e desideri dei potenziali utenti (studenti e rappresentanti). Utilizzo di strumenti per condurre interviste da remoto, moduli di contatto per raccogliere feedback iniziali e lavagne digitali per facilitare la collaborazione e la visualizzazione delle informazioni raccolte dal team.
+
+Fase 2 - Validazione dell'idea e del mercato interno:
+
+Obiettivo
+Testare se il modulo proposto (es. Marketplace o Eventi) risolve un problema reale per un pubblico disposto a "pagare" con tempo, attenzione, interazioni o dati.
+Attività
+• Creazione di un Minimum Viable Product (MVP) o prototipo delle funzionalità per testare l'idea direttamente con la comunità scolastica.
+• Test con early adopters (es. classi pilota) e raccolta di feedback strutturato attraverso piattaforme di test utente, osservando il comportamento degli studenti in tempo reale. Bisogna tenere conto che i test con gli early adopters possono influenzare i risultati, poiché questi utenti tendono ad essere più entusiasti e tolleranti verso i bug.
+• Fake Door Test: Inserimento di link o elementi di interfaccia preliminari all'interno del sistema per valutare l'interesse degli studenti verso una funzionalità prima di svilupparla completamente nel backend.
+• Survey di concept testing: Creazione di sondaggi mirati alla scuola per raccogliere feedback sui moduli proposti e valutare l'interesse e l'intenzione d'uso dei diversi indirizzi di studio.
+
+Fase 3 - Sviluppo e Testing
+
+Obiettivo
+Costruire la versione beta dei moduli (Materiali, Marketplace, Eventi, Idee, Sondaggi) e raccogliere feedback strutturato per migliorare l'esperienza utente prima del rilascio ufficiale.
+Attività
+• Usability test: Condurre test di usabilità per valutare la facilità d'uso e l'efficacia delle interfacce. I partecipanti eseguono compiti specifici (es. caricare un appunto, pubblicare un annuncio di un libro) mentre vengono osservati dal team per identificare frizioni.
+• A/B testing: Eseguire test comparativi su diverse varianti di interfaccia o flussi di registrazione per determinare quale opzione produce i migliori risultati in termini di conversioni, engagement o soddisfazione degli studenti.
+• Analisi comportamentale: Monitorare il comportamento degli utenti attraverso strumenti di analisi web anonimizzati, raccogliendo dati sulle interazioni degli utenti all'interno dei moduli e identificando aree di miglioramento del codice.
+• Analytics Intelligence: Utilizzare modelli statistici per analizzare i dati raccolti durante le fasi di testing, identificando pattern, tendenze d'uso e opportunità di ottimizzazione della piattaforma prima del lancio.
+
+Fase 4 - Lancio e Monitoraggio
+
+Obiettivo
+Portare la piattaforma sul mercato interno della scuola e misurarne l'adozione biologica da parte della comunità studentesca.
+Attività
+• Analisi delle metriche di performance: Monitorare i KPI chiave del progetto (utenti attivi settimanali/mensili, materiali pubblicati, libri venduti, eventi creati) per valutare l'efficacia del lancio e raccogliere dati in tempo reale.
+• Analisi del funnel di conversione: Analizzare il percorso degli utenti dall'accesso al completamento di un'azione (es. registrazione o iscrizione a un evento) per identificare ostacoli o punti di attrito nell'interfaccia.
+• Community listening: Monitorare le conversazioni e le recensioni all'interno della scuola per raccogliere i feedback degli studenti, identificare problemi urgenti e valutare la percezione del progetto.
+• Analisi della retention e del churn: Monitorare il tasso di ritorno degli studenti sulla piattaforma e analizzare le ragioni dell'abbandono per sviluppare strategie atte ad aumentare l'utilità e la fidelizzazione nel tempo.
+
+Fase 5 - Iterazione e Scaling
+
+Obiettivo
+Migliorare continuamente la piattaforma in base ai feedback reali dei clienti/utenti e scalare l'architettura per un eventuale riutilizzo in altri istituti.
+Attività
+• Prioritizzazione delle funzionalità in base al "job" da soddisfare: Sulla base delle metriche e dei feedback raccolti, identificare le funzionalità più importanti da inserire nel backlog di sviluppo per aumentare il valore d'uso della biblioteca digitale, del catalogo libri o del calendario eventi.
+• Test continui su nuovi segmenti: Condurre test continui su nuove classi o indirizzi dell'istituto per ottimizzare le performance e valutare l'efficacia delle strategie di adozione.
+• Analisi dei dati first-party (database, analytics, feedback): Raccogliere e analizzare i dati strutturati interni provenienti dal database della piattaforma, dagli strumenti di analisi e dai moduli di segnalazione per ottenere insight profondi sulle evoluzioni dei bisogni degli studenti.
+
+Strumenti digitali per la ricerca di mercato
+
+
+Fase	Strumenti	Cosa Misurano
+Discovery	Google Trends, Forum, Interviste	Domanda, Alternative, Keywords
+Validazione	Typeform, Google Forms, Fake Door	Interesse, Intenzioni d'Uso
+Testing	Matomo, Analytics, Usability Test	Performance, Conversioni, Usabilità
+Lancio	Feedback Interni, Canali d'Istituto	Sentiment, Share of Voice
+Iterazione	Database, SQL, Dashboard, Backlog	Retention, Churn, Engagement
+
