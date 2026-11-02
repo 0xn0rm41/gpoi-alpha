@@ -1,0 +1,16 @@
+# Avvio con Docker:  docker compose up -d
+# Prima copia .env.example in .env e compilalo. I dati restano nel volume "hub-data".
+services:
+  hub:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+    ports:
+      - "127.0.0.1:3000:3000"      # esposto solo in locale: davanti ci va un reverse proxy con HTTPS (vedi docs/HOSTING.md)
+    volumes:
+      - hub-data:/app/data
+volumes:
+  hub-data:

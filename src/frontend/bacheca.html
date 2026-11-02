@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<!--
+  BACHECA.HTML — Hub Studenti
+  Pagina unica con sei sezioni che si cambiano con il menu (#bacheca, #idee, #appunti,
+  #sondaggi, #libri, #profilo) più #admin per i rappresentanti. Struttura:
+    1. <style>   grafica (CSS)
+    2. <body>    struttura HTML delle sezioni
+    3. js/bacheca.js  logica: legge e scrive i dati sul server (database SQLite)
+-->
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0B3B45">
+    <title>Bacheca – Hub Studenti</title>
+
+    <link rel="stylesheet" href="css/fonts.css">
+
+    <style>
+        /* ===== 1. COLORI, FONT, MISURE (cambia qui l'aspetto di tutto il sito) ===== */
+        :root {
+            --spruce: #0B3B45;  --spruce-2: #12505D;          /* verde principale e sua variante chiara */
+            --amber: #F2A93B;   --amber-soft: #FDF1DC;  --amber-ink: #7A4E08;  /* ambra: accento, sfondo, testo */
+            --paper: #F3F6F5;   --card: #FFFFFF;                /* sfondo pagina e schede */
+            --ink: #15262B;     --muted: #5B6B70;   --line: #DCE4E5;   /* testo, testo secondario, bordi */
+            --ok: #17603A;      --ok-bg: #E6F4EC;   --danger: #B42318;
+            --shadow: 0 1px 2px rgba(11,59,69,.05), 0 8px 24px rgba(11,59,69,.07);
+            --r-lg: 1.25rem;    --r-md: .875rem;    --r-sm: .625rem;    /* raggi degli angoli */
+            --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+            --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+        html { -webkit-text-size-adjust: 100%; }
+        body { margin: 0; font-family: var(--font-body); color: var(--ink); background: var(--paper);
+               line-height: 1.5; -webkit-font-smoothing: antialiased; }
+        [hidden] { display: none !important; }       /* l'attributo hidden vince sempre (es. link Admin per gli studenti) */
+        button { font: inherit; cursor: pointer; }
+        a { color: inherit; }
+        h1, h2, h3 { font-family: var(--font-display); letter-spacing: -.01em; margin: 0; }
+        h1:focus { outline: none; }
+        :focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }   /* anello per la tastiera */
+        svg { flex: none; }
+        .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+        /* ===== 2. BARRA SUPERIORE ===== */
+        .topbar { position: sticky; top: 0; z-index: 20; background: var(--spruce); color: #fff;
+                  padding-top: env(safe-area-inset-top); }
+        .topbar-inner { max-width: 72rem; margin: 0 auto; padding: .625rem clamp(1rem, 4vw, 2rem);
+                        display: flex; align-items: center; gap: 1.5rem; }
+        .logo { display: inline-flex; align-items: center; gap: .625rem; font-family: var(--font-display);
+                font-weight: 700; font-size: 1.125rem; text-decoration: none; }
+        .logo svg { width: 2rem; height: 2rem; }
+
+        .nav { display: none; gap: .25rem; margin-left: .5rem; }      /* visibile solo da 900px in su */
+        .nav a { display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0 .875rem;
+                 color: rgba(255,255,255,.78); text-decoration: none; font-weight: 500; border-radius: .625rem; }
+        .nav a:hover { background: rgba(255,255,255,.08); color: #fff; }
+        .nav a[aria-current="page"] { color: #fff; box-shadow: inset 0 -3px 0 var(--amber); border-radius: .625rem .625rem 0 0; }
+
+        .user { margin-left: auto; display: flex; align-items: center; gap: .5rem; }
+        .user-chip { display: flex; align-items: center; gap: .625rem; padding: .25rem .5rem .25rem .25rem;
+                     border-radius: 999px; text-decoration: none; }
+        .user-chip:hover, .user-chip[aria-current="page"] { background: rgba(255,255,255,.1); }
+        .avatar { width: 2.25rem; height: 2.25rem; border-radius: 50%; display: grid; place-items: center;
+                  background: var(--amber); color: var(--spruce); font-family: var(--font-display); font-weight: 700; font-size: .9375rem; }
+        .avatar.big { width: 4.5rem; height: 4.5rem; font-size: 1.5rem; }
+        .user-name { display: none; font-weight: 500; }
+
+        /* ===== 3. LAYOUT GENERALE E ELEMENTI COMUNI ===== */
+        .wrap { max-width: 72rem; margin: 0 auto; padding: clamp(1.25rem, 4vw, 2.25rem) clamp(1rem, 4vw, 2rem) 6.5rem; }
+        .stretta { max-width: 50rem; }                                 /* sezioni con colonna di lettura stretta */
+        .page-head { margin-bottom: 1.25rem; }
+        .page-head h1 { font-size: clamp(1.75rem, 4vw, 2.25rem); line-height: 1.1; }
+        .page-head p { margin: .375rem 0 0; color: var(--muted); max-width: 60ch; }
+        h2 { font-size: 1.375rem; }
+
+        .panel { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-md); box-shadow: var(--shadow); }
+        .stack { display: grid; gap: 1rem; }
+        .empty { padding: 2.5rem 1.25rem; text-align: center; color: var(--muted); }
+        .empty strong { display: block; color: var(--ink); font-size: 1.0625rem; margin-bottom: .25rem; }
+        .meta { margin: .25rem 0 0; display: flex; flex-wrap: wrap; gap: .25rem 1rem; color: var(--muted); font-size: .9375rem; }
+        .desc { margin: .5rem 0 0; max-width: 62ch; white-space: pre-line; }
+        .count { color: var(--muted); font-size: .875rem; }
+        .badge { display: inline-flex; padding: .125rem .625rem; border-radius: 999px; font-size: .8125rem; font-weight: 600; background: #E6ECEC; color: var(--muted); }
+        .badge.pronta { background: var(--amber-soft); color: var(--amber-ink); }
+        .badge.esposta { background: var(--ok-bg); color: var(--ok); }
+        .progress { height: .5rem; border-radius: 999px; background: #E6ECEC; overflow: hidden; }
+        .progress i { display: block; height: 100%; background: var(--spruce-2); border-radius: inherit; }
+        .progress.done i { background: var(--amber); }
+
+        /* Pulsanti: .btn-main (pieno verde), .btn-line (contorno), .btn-amber, .btn-text (discreto) */
+        .btn-main, .btn-line, .btn-amber { display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+                min-height: 2.75rem; padding: 0 1.125rem; border-radius: .75rem; font-weight: 600; text-decoration: none; border: 1.5px solid transparent; }
+        .btn-main { color: #fff; background: var(--spruce); }
+        .btn-main:hover { background: var(--spruce-2); }
+        .btn-main:disabled { opacity: .6; cursor: progress; }
+        .btn-line { color: var(--spruce); background: transparent; border-color: var(--spruce); }
+        .btn-line:hover { background: rgba(11,59,69,.07); }
+        .btn-line[aria-pressed="true"] { background: var(--spruce); color: #fff; }
+        .btn-amber { color: var(--spruce); background: var(--amber); }
+        .btn-amber:hover { filter: brightness(.96); }
+        .btn-amber[aria-pressed="true"] { background: #fff; }
+        .btn-text { display: inline-flex; align-items: center; gap: .375rem; min-height: 2.5rem; padding: 0 .625rem;
+                    background: none; border: 0; border-radius: .5rem; color: var(--muted); font-weight: 500; }
+        .btn-text:hover { background: rgba(11,59,69,.06); color: var(--ink); }
+        .btn-text.danger:hover { color: var(--danger); }
+        .btn-text svg { width: 1.125rem; height: 1.125rem; }
+
+        /* ===== 4. FORM (campi e riquadro apribile "+ Nuovo ...") ===== */
+        .form-panel { margin-bottom: 1.25rem; }
+        .form-panel summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: .75rem;
+                              min-height: 3.5rem; padding: .5rem 1.125rem; font-weight: 600; color: var(--spruce); }
+        .form-panel summary::-webkit-details-marker { display: none; }
+        .form-panel summary::before { content: "+"; display: grid; place-items: center; width: 1.75rem; height: 1.75rem;
+                                      border-radius: 50%; background: var(--spruce); color: #fff; font-size: 1.125rem; line-height: 1; }
+        .form-panel[open] summary::before { content: "–"; }
+        .form-body { display: grid; gap: 1rem; padding: 0 1.125rem 1.25rem; }
+        .row2 { display: grid; gap: 1rem; }
+        .field { display: grid; gap: .375rem; }
+        .field > label, .label { font-size: .9375rem; font-weight: 600; }
+        .hint { margin: 0; font-size: .8125rem; color: var(--muted); }
+        input[type=text], input[type=search], input[type=number], select, textarea {
+            width: 100%; min-height: 3rem; padding: .625rem .875rem; font: inherit; font-size: 1rem;   /* 16px: niente zoom su iPhone */
+            color: var(--ink); background: var(--card); border: 1.5px solid var(--line); border-radius: .75rem; }
+        textarea { min-height: 6.5rem; resize: vertical; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--spruce-2); box-shadow: 0 0 0 4px rgba(18,80,93,.16); }
+        input[type=file] { width: 100%; padding: .75rem; font: inherit; font-size: 1rem; border: 1.5px dashed #B5C2C4; border-radius: .75rem; background: var(--paper); }
+        .anteprima { max-width: 100%; max-height: 14rem; border-radius: .75rem; object-fit: cover; }
+        .opzioni { display: grid; gap: .5rem; }
+        .anteprima-prezzo { display: block; padding: .625rem .875rem; border-radius: .75rem; background: var(--amber-soft); color: var(--amber-ink); font-size: .9375rem; }
+
+        /* ===== 5. BACHECA: hero, riquadri rapidi, eventi, colonna laterale ===== */
+        .hero { position: relative; overflow: hidden; color: #fff; border-radius: var(--r-lg);
+                background: linear-gradient(135deg, var(--spruce) 0%, var(--spruce-2) 100%);
+                padding: clamp(1.25rem, 4vw, 2.25rem); display: grid; gap: 1.5rem; }
+        .hero::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+                        background-image: radial-gradient(rgba(255,255,255,.12) 1.2px, transparent 1.2px); background-size: 22px 22px;
+                        -webkit-mask-image: linear-gradient(120deg, #000, transparent 65%); mask-image: linear-gradient(120deg, #000, transparent 65%); }
+        .hero > * { position: relative; }
+        .hero h1 { font-size: clamp(1.875rem, 5vw, 2.75rem); line-height: 1.08; letter-spacing: -.02em; }
+        .hero p { margin: .5rem 0 0; color: rgba(255,255,255,.8); font-size: 1.0625rem; max-width: 38ch; }
+        .next { background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.18); border-radius: var(--r-md); padding: 1.125rem; align-self: end; }
+        .next .label { font-size: .875rem; color: rgba(255,255,255,.75); font-weight: 500; }
+        .next h2 { margin: .25rem 0; font-size: 1.375rem; }
+        .next .meta { color: rgba(255,255,255,.8); margin-bottom: .875rem; }
+
+        .tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: .75rem; margin: 1rem 0 1.75rem; }
+        .tile { display: flex; align-items: center; gap: .875rem; padding: .875rem 1rem; text-decoration: none;
+                background: var(--card); border: 1px solid var(--line); border-radius: var(--r-md); box-shadow: var(--shadow); }
+        .tile:hover { border-color: #B5C2C4; }
+        .tile-ico { width: 2.5rem; height: 2.5rem; border-radius: .75rem; display: grid; place-items: center; background: var(--amber-soft); color: var(--amber-ink); }
+        .tile-ico svg { width: 1.375rem; height: 1.375rem; }
+        .tile b { display: block; font-family: var(--font-display); font-size: 1.5rem; line-height: 1.1; }
+        .tile span { color: var(--muted); font-size: .875rem; line-height: 1.2; display: block; }
+
+        .layout { display: grid; gap: 1.75rem; grid-template-columns: minmax(0, 1fr); }
+        .toolbar { display: grid; gap: .875rem; margin: 1rem 0; }
+        .search { position: relative; }
+        .search svg { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 1.25rem; height: 1.25rem; color: var(--muted); pointer-events: none; }
+        .search input { padding-left: 2.75rem; }
+        .chips { display: flex; gap: .5rem; overflow-x: auto; padding-bottom: .25rem; scrollbar-width: none;
+                 margin-inline: calc(-1 * clamp(1rem, 4vw, 2rem)); padding-inline: clamp(1rem, 4vw, 2rem); }
+        .chips::-webkit-scrollbar { display: none; }
+        .chip { flex: none; min-height: 2.5rem; padding: 0 1rem; color: var(--ink); background: var(--card);
+                border: 1.5px solid var(--line); border-radius: 999px; font-weight: 500; }
+        .chip:hover { border-color: #B5C2C4; }
+        .chip[aria-pressed="true"] { background: var(--spruce); border-color: var(--spruce); color: #fff; }
+
+        .event { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .875rem 1rem; padding: 1.125rem; border-top: 1px solid var(--line); }
+        .event:first-child { border-top: 0; }
+        .date { align-self: start; width: 3.5rem; padding: .5rem 0; border-radius: .75rem; background: var(--amber-soft); color: var(--spruce);
+                text-align: center; line-height: 1; font-family: var(--font-display); font-weight: 700; }
+        .date b { display: block; font-size: 1.5rem; }
+        .date span { display: block; margin-top: .25rem; font-size: .8125rem; font-weight: 600; }
+        .event h3 { font-size: 1.125rem; line-height: 1.3; }
+        .when { color: var(--spruce); font-weight: 600; }
+        .tag { display: inline-flex; align-items: center; gap: .375rem; }
+        .tag::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: var(--dot, var(--spruce-2)); }
+        .tag[data-cat="Sport"] { --dot: #D9822B; } .tag[data-cat="Studio"] { --dot: #2F6FD0; } .tag[data-cat="Cultura"] { --dot: #8A4FA8; }
+        .action { grid-column: 1 / -1; display: flex; align-items: center; gap: .875rem; }
+
+        .side { display: grid; gap: 1.75rem; align-content: start; }
+        .box { padding: 1.25rem; }
+        .box h2 { font-size: 1.1875rem; margin-bottom: 1rem; }
+        .notice { padding: .75rem 0; border-top: 1px solid var(--line); }
+        .notice:first-of-type { border-top: 0; padding-top: 0; }
+        .notice:last-child { padding-bottom: 0; }
+        .notice strong { display: block; font-weight: 600; }
+        .notice p { margin: .125rem 0 0; color: var(--muted); font-size: .9375rem; }
+        .notice small { color: var(--muted); font-size: .8125rem; }
+        .mini { padding: .625rem 0; border-top: 1px solid var(--line); }
+        .mini:first-of-type { border-top: 0; padding-top: 0; }
+        .mini strong { display: block; font-weight: 600; margin-bottom: .375rem; }
+
+        /* ===== 6. IDEE ===== */
+        .idea { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 1rem; padding: 1.125rem; border-top: 1px solid var(--line); }
+        .idea:first-child { border-top: 0; }
+        .sostieni { width: 3.75rem; padding: .5rem 0; display: flex; flex-direction: column; align-items: center; gap: .125rem;
+                    color: var(--ink); background: var(--card); border: 1.5px solid var(--line); border-radius: var(--r-sm); align-self: start; }
+        .sostieni svg { width: 1.375rem; height: 1.375rem; }
+        .sostieni b { font-family: var(--font-display); font-size: 1.125rem; line-height: 1; }
+        .sostieni:hover { border-color: #B5C2C4; }
+        .sostieni[aria-pressed="true"] { background: var(--amber); border-color: var(--amber); color: var(--spruce); }
+        .idea h3 { font-size: 1.125rem; line-height: 1.3; margin-bottom: .125rem; }
+        .idea .progress { margin: .75rem 0 .375rem; }
+        .azioni { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-top: .5rem; }
+
+        /* ===== 7. SONDAGGI ===== */
+        .poll { padding: 1.25rem; }
+        .poll h3 { font-size: 1.1875rem; line-height: 1.3; margin-bottom: .25rem; }
+        .poll .meta { margin-bottom: .875rem; }
+        .opt { display: flex; align-items: center; gap: .75rem; min-height: 3rem; padding: .5rem .875rem; margin-bottom: .5rem;
+               border: 1.5px solid var(--line); border-radius: .75rem; cursor: pointer; }
+        .opt:hover { border-color: #B5C2C4; }
+        .opt:has(input:checked) { border-color: var(--spruce-2); background: rgba(18,80,93,.05); }
+        .opt input { width: 1.125rem; height: 1.125rem; accent-color: var(--spruce); flex: none; }
+        .result { margin-bottom: .875rem; }
+        .result-top { display: flex; justify-content: space-between; gap: 1rem; font-size: .9375rem; }
+        .result-top .mine { font-weight: 600; }
+        .bar { margin-top: .375rem; height: .625rem; border-radius: 999px; background: #E6ECEC; overflow: hidden; }
+        .bar i { display: block; height: 100%; border-radius: inherit; background: var(--spruce-2); }
+        .bar i.mine { background: var(--amber); }
+
+        /* ===== 8. APPUNTI (stile Reddit) ===== */
+        .post { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .875rem; padding: 1rem; }
+        .votes { display: flex; flex-direction: column; align-items: center; gap: .125rem; }
+        .votes button { width: 2.5rem; height: 2.5rem; display: grid; place-items: center; border: 0; border-radius: .625rem; background: transparent; color: var(--muted); }
+        .votes button:hover { background: rgba(11,59,69,.07); }
+        .votes button svg { width: 1.375rem; height: 1.375rem; }
+        .votes .su[aria-pressed="true"] { background: var(--amber-soft); color: var(--amber-ink); }
+        .votes .giu[aria-pressed="true"] { background: var(--muted); color: #fff; }
+        .votes b { font-family: var(--font-display); }
+        .post h3 { font-size: 1.1875rem; line-height: 1.3; margin: .25rem 0; }
+        .post .foto { display: block; width: 100%; max-height: 26rem; object-fit: cover; border-radius: .75rem; margin: .625rem 0; background: #E6ECEC; }
+        .materia { display: inline-flex; padding: .125rem .625rem; border-radius: 999px; font-size: .8125rem; font-weight: 600; color: #fff; background: var(--c, var(--muted)); }
+        .commenti { margin-top: .5rem; padding-top: .75rem; border-top: 1px solid var(--line); display: grid; gap: .75rem; }
+        .commento p { margin: .125rem 0 0; white-space: pre-line; }
+        .commento small, .vuoto-piccolo { color: var(--muted); font-size: .8125rem; margin: 0; }
+        .commento-form { display: flex; gap: .5rem; }
+        .commento-form input { flex: 1; min-width: 0; }
+
+        /* ===== 9. LIBRI ===== */
+        .libri-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); }
+        .libro { display: flex; flex-direction: column; overflow: hidden; }
+        .cover { position: relative; min-height: 8.5rem; padding: 3rem 1.125rem 1.125rem 1.5rem; color: #fff; background: var(--c, var(--spruce));
+                 border-left: .625rem solid rgba(0,0,0,.2); display: flex; flex-direction: column; justify-content: flex-end; gap: .25rem; }
+        .cover small { opacity: .9; }
+        .cover h3 { font-size: 1.1875rem; line-height: 1.2; }
+        .price { position: absolute; top: .75rem; right: .75rem; padding: .25rem .75rem; border-radius: 999px; font-weight: 700; font-size: .9375rem; background: var(--amber); color: var(--spruce); }
+        .price.free { background: #fff; color: var(--ok); }
+        .libro-body { padding: .875rem 1rem 1rem; display: grid; gap: .5rem; align-content: start; flex: 1; }
+        .libro-body .desc { margin: 0; font-size: .9375rem; }
+        .libro-body .azioni { margin-top: auto; }
+
+        /* ===== 10. PROFILO (esempio) ===== */
+        .profilo { padding: clamp(1.25rem, 4vw, 1.75rem); }
+        .profilo-top { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem; }
+        .profilo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .75rem; }
+        .stat { padding: 1rem; border: 1px dashed #B5C2C4; border-radius: var(--r-sm); color: var(--muted); }
+        .stat b { display: block; font-family: var(--font-display); font-size: 1.5rem; color: var(--ink); }
+        .nota { margin: 1.25rem 0 0; padding: .875rem 1rem; border-radius: var(--r-sm); background: var(--amber-soft); color: var(--amber-ink); font-size: .9375rem; }
+
+        /* ===== 11. BARRA INFERIORE (smartphone/iPad verticale) E AVVISO ===== */
+        .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: grid; grid-template-columns: repeat(5, 1fr);
+                  background: var(--card); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }
+        .tabbar a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .125rem; min-height: 3.5rem;
+                    color: var(--muted); text-decoration: none; font-size: .6875rem; font-weight: 500; }
+        .tabbar svg { width: 1.5rem; height: 1.5rem; }
+        .tabbar a[aria-current="page"] { color: var(--spruce); font-weight: 600; }
+        .toast { position: fixed; left: 50%; bottom: 5.5rem; z-index: 30; transform: translate(-50%, 1rem); max-width: calc(100% - 2rem);
+                 padding: .75rem 1.125rem; color: #fff; background: var(--ink); border-radius: .75rem; font-size: .9375rem;
+                 opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; }
+        .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+        /* ===== 12. ADATTAMENTO AGLI SCHERMI (tablet e desktop) ===== */
+        @media (min-width: 600px) {
+            .user-name { display: block; }
+            .row2 { grid-template-columns: 1fr 1fr; }
+            .tiles { grid-template-columns: repeat(4, 1fr); }
+            .profilo-grid { grid-template-columns: repeat(4, 1fr); }
+            .event { grid-template-columns: auto minmax(0, 1fr) auto; padding: 1.25rem 1.5rem; }
+            .action { grid-column: auto; flex-direction: column; align-items: flex-end; gap: .375rem; }
+            .chips { margin-inline: 0; padding-inline: 0; flex-wrap: wrap; overflow: visible; }
+            .hero { grid-template-columns: 1.2fr 1fr; align-items: end; }
+        }
+        @media (min-width: 900px) {
+            .nav { display: flex; }
+            .tabbar { display: none; }          /* la barra inferiore esiste solo su schermi piccoli */
+            .wrap { padding-bottom: 3rem; }
+            .toast { bottom: 2rem; }
+        }
+        @media (min-width: 1024px) {
+            .layout { grid-template-columns: minmax(0, 1fr) 20rem; gap: 2rem; }
+            .side { position: sticky; top: 5.5rem; }
+        }
+
+        /* ===== 13. NOVITÀ: richieste libri, moderazione, profilo, admin, piè di pagina ===== */
+        input[type=date], input[type=time], input[type=password] { width: 100%; min-height: 3rem; padding: .625rem .875rem; font: inherit; font-size: 1rem;
+            color: var(--ink); background: var(--card); border: 1.5px solid var(--line); border-radius: .75rem; }
+        input[type=password]:focus, input[type=date]:focus, input[type=time]:focus { outline: none; border-color: var(--spruce-2); box-shadow: 0 0 0 4px rgba(18,80,93,.16); }
+        .btn-danger { color: #fff; background: var(--danger); display: inline-flex; align-items: center; justify-content: center; min-height: 2.75rem; padding: 0 1.125rem;
+                      border-radius: .75rem; border: 0; font-weight: 600; }
+        .btn-danger:hover { filter: brightness(.92); }
+        button:disabled { opacity: .6; cursor: progress; }
+        .richieste { padding: .625rem .75rem; border-radius: .625rem; background: var(--paper); display: grid; gap: .375rem; font-size: .9375rem; }
+        .richiesta { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .25rem .5rem; }
+        .segnalazione { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .5rem 1rem; padding: .875rem 0; border-top: 1px solid var(--line); }
+        .segnalazione:first-child { border-top: 0; padding-top: 0; }
+        .sezione-box { padding: clamp(1.25rem, 4vw, 1.75rem); margin-top: 1rem; }
+        .sezione-box h2 { margin-bottom: .75rem; }
+        .sezione-box > p { margin: 0 0 1rem; color: var(--muted); }
+        .zona-pericolo { border-color: #E9B7B1; }
+        .check-riga { display: flex; align-items: flex-start; gap: .625rem; font-size: .9375rem; }
+        .check-riga input { width: 1.125rem; height: 1.125rem; margin-top: .2rem; accent-color: var(--danger); flex: none; }
+        .piede { max-width: 72rem; margin: 0 auto; padding: 0 clamp(1rem, 4vw, 2rem) 6rem; color: var(--muted); font-size: .875rem; }
+        .piede a { color: var(--spruce-2); }
+        .nav-admin { color: #fff; text-decoration: none; }
+        .nav-admin:hover, .nav-admin[aria-current="page"] { background: rgba(255,255,255,.1); }
+        @media (min-width: 900px) { .piede { padding-bottom: 2rem; } }
+        @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+    </style>
+</head>
+<body>
+
+    <!-- ===== BARRA SUPERIORE: logo, menu (solo desktop/tablet largo), profilo ed Esci ===== -->
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a class="logo" href="#bacheca">
+                <svg viewBox="0 0 40 40" aria-hidden="true">
+                    <rect width="40" height="40" rx="11" fill="#F2A93B"/>
+                    <rect x="8" y="9" width="10" height="10" rx="2.5" fill="#0B3B45"/>
+                    <rect x="22" y="9" width="10" height="6" rx="2" fill="#0B3B45"/>
+                    <rect x="22" y="18" width="10" height="13" rx="2.5" fill="#0B3B45"/>
+                    <rect x="8" y="22" width="10" height="9" rx="2.5" fill="#0B3B45"/>
+                </svg>
+                Hub Studenti
+            </a>
+            <!-- data-vista collega ogni link alla sezione con id "vista-NOME" -->
+            <nav class="nav" aria-label="Sezioni principali">
+                <a href="#bacheca" data-vista="bacheca">Bacheca</a>
+                <a href="#idee" data-vista="idee">Idee</a>
+                <a href="#appunti" data-vista="appunti">Appunti</a>
+                <a href="#sondaggi" data-vista="sondaggi">Sondaggi</a>
+                <a href="#libri" data-vista="libri">Libri</a>
+            </nav>
+            <div class="user">
+                <a class="user-chip" href="#profilo" data-vista="profilo" aria-label="Il tuo profilo">
+                    <span class="avatar" id="avatar" aria-hidden="true">?</span>
+                    <span class="user-name" id="userName"></span>
+                </a>
+                <a class="btn-text nav-admin" id="link-admin" href="#admin" data-vista="admin" hidden>Admin</a>
+                <button class="btn-text" id="logout" type="button" style="color:#fff">Esci</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="wrap">
+
+        <!-- ============ SEZIONE: BACHECA (home) ============ -->
+        <section id="vista-bacheca" class="vista">
+            <div class="hero">
+                <div>
+                    <h1 id="saluto" tabindex="-1">Ciao!</h1>
+                    <p>Ecco cosa succede a scuola nelle prossime settimane.</p>
+                </div>
+                <div class="next" id="prossimo"></div>
+            </div>
+
+            <div class="tiles" id="tiles"></div>
+
+            <div class="layout">
+                <section aria-labelledby="eventiTitolo">
+                    <h2 id="eventiTitolo">Eventi in programma</h2>
+                    <div class="toolbar">
+                        <div class="search">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                            <label class="sr-only" for="cerca-eventi">Cerca un evento</label>
+                            <input type="search" id="cerca-eventi" placeholder="Cerca per titolo o luogo" autocomplete="off">
+                        </div>
+                        <div class="chips" id="chips-eventi" role="group" aria-label="Filtra per categoria"></div>
+                    </div>
+                    <div class="panel" id="lista-eventi"></div>
+                </section>
+
+                <aside class="side" aria-label="Comunicazioni e idee">
+                    <!-- Comunicazioni dei rappresentanti: le pubblicano gli admin (sezione Admin) -->
+                    <section class="panel box" aria-labelledby="avvisiTitolo">
+                        <h2 id="avvisiTitolo">Dai rappresentanti</h2>
+                        <div id="lista-comunicazioni"></div>
+                    </section>
+                    <section class="panel box" aria-labelledby="topIdeeTitolo">
+                        <h2 id="topIdeeTitolo">Idee più votate</h2>
+                        <div id="side-idee"></div>
+                    </section>
+                    <section class="panel box" aria-labelledby="sideSondTitolo">
+                        <h2 id="sideSondTitolo">Ultimo sondaggio</h2>
+                        <div id="side-sondaggio"></div>
+                    </section>
+                </aside>
+            </div>
+        </section>
+
+        <!-- ============ SEZIONE: IDEE PER L'ISTITUTO ============ -->
+        <section id="vista-idee" class="vista stretta" hidden>
+            <div class="page-head">
+                <h1 tabindex="-1">Idee per l'istituto</h1>
+                <p>Proponi un evento o un'iniziativa e sostieni quelle degli altri. Quando un'idea arriva a <b id="soglia-testo"></b> sostegni, i rappresentanti la portano in assemblea.</p>
+            </div>
+            <details class="panel form-panel">
+                <summary>Proponi un'idea</summary>
+                <form class="form-body" data-form="idea">
+                    <div class="field"><label for="idea-titolo">Titolo</label>
+                        <input type="text" id="idea-titolo" name="titolo" maxlength="80" required placeholder="Es. Giornata dei mestieri con ex studenti"></div>
+                    <div class="field"><label for="idea-desc">Descrizione</label>
+                        <textarea id="idea-desc" name="desc" maxlength="400" placeholder="Di cosa si tratta e perché sarebbe utile?"></textarea></div>
+                    <div><button class="btn-main" type="submit">Pubblica idea</button></div>
+                </form>
+            </details>
+            <div class="panel" id="lista-idee"></div>
+        </section>
+
+        <!-- ============ SEZIONE: APPUNTI (foto + spiegazione, stile Reddit) ============ -->
+        <section id="vista-appunti" class="vista stretta" hidden>
+            <div class="page-head">
+                <h1 tabindex="-1">Appunti</h1>
+                <p>Fotografa i tuoi appunti, spiegali con due parole e aiuta i compagni. Vota quelli utili e commentali.</p>
+            </div>
+            <details class="panel form-panel">
+                <summary>Condividi degli appunti</summary>
+                <form class="form-body" data-form="appunto">
+                    <div class="field"><label for="appunto-foto">Foto degli appunti</label>
+                        <input type="file" id="appunto-foto" name="foto" accept="image/*" required>
+                        <img class="anteprima" id="anteprima-foto" alt="Anteprima della foto" hidden></div>
+                    <div class="row2">
+                        <div class="field"><label for="appunto-titolo">Titolo</label>
+                            <input type="text" id="appunto-titolo" name="titolo" maxlength="80" required placeholder="Es. Equazioni di secondo grado"></div>
+                        <div class="field"><label for="appunto-materia">Materia</label>
+                            <select id="appunto-materia" name="materia"></select></div>
+                    </div>
+                    <div class="field"><label for="appunto-testo">Spiegazione</label>
+                        <textarea id="appunto-testo" name="testo" maxlength="600" required placeholder="Cosa c'è in questi appunti? Cosa conviene sapere?"></textarea></div>
+                    <div><button class="btn-main" type="submit">Pubblica appunti</button></div>
+                </form>
+            </details>
+            <div class="toolbar">
+                <div class="chips" id="chips-appunti" role="group" aria-label="Filtra per materia"></div>
+                <div class="field"><label class="sr-only" for="ordine-appunti">Ordina per</label>
+                    <select id="ordine-appunti"><option value="recenti">Più recenti</option><option value="voti">Più votati</option></select></div>
+            </div>
+            <div class="stack" id="lista-appunti"></div>
+        </section>
+
+        <!-- ============ SEZIONE: SONDAGGI ============ -->
+        <section id="vista-sondaggi" class="vista stretta" hidden>
+            <div class="page-head">
+                <h1 tabindex="-1">Sondaggi</h1>
+                <p>Crea un sondaggio per la scuola o rispondi a quelli degli altri studenti.</p>
+            </div>
+            <details class="panel form-panel">
+                <summary>Crea un sondaggio</summary>
+                <form class="form-body" data-form="sondaggio">
+                    <div class="field"><label for="sond-domanda">Domanda</label>
+                        <input type="text" id="sond-domanda" name="domanda" maxlength="120" required placeholder="Es. Che attività vorresti per la settimana dello studente?"></div>
+                    <div class="field"><span class="label">Opzioni (da 2 a <span id="max-opzioni"></span>)</span>
+                        <div class="opzioni" id="opzioni-sondaggio"></div></div>
+                    <div class="azioni">
+                        <button class="btn-line" type="button" data-azione="aggiungi-opzione">Aggiungi opzione</button>
+                        <button class="btn-main" type="submit">Pubblica sondaggio</button>
+                    </div>
+                </form>
+            </details>
+            <div class="stack" id="lista-sondaggi"></div>
+        </section>
+
+        <!-- ============ SEZIONE: LIBRI ============ -->
+        <section id="vista-libri" class="vista" hidden>
+            <div class="page-head">
+                <h1 tabindex="-1">Libri</h1>
+                <p>Dai una seconda vita ai libri che non usi più. Puoi regalarli o metterli in vendita a un prezzo basso. Nessun pagamento passa da qui: lo scambio avviene di persona. <span id="commissione-box" hidden>Se indichi un prezzo, è previsto un contributo (<b id="commissione-testo"></b>) per i costi della piattaforma: per ora è solo un calcolo indicativo. </span>I regali sono sempre gratuiti.</p>
+            </div>
+            <details class="panel form-panel stretta">
+                <summary>Metti a disposizione un libro</summary>
+                <form class="form-body" data-form="libro">
+                    <div class="field"><label for="libro-titolo">Titolo del libro</label>
+                        <input type="text" id="libro-titolo" name="titolo" maxlength="80" required placeholder="Es. Matematica – Volume 3"></div>
+                    <div class="row2">
+                        <div class="field"><label for="libro-materia">Materia</label><select id="libro-materia" name="materia"></select></div>
+                        <div class="field"><label for="libro-classe">Classe</label><select id="libro-classe" name="classe"></select></div>
+                    </div>
+                    <div class="row2">
+                        <div class="field"><label for="libro-cond">Condizione</label><select id="libro-cond" name="condizione"></select></div>
+                        <div class="field"><label for="libro-prezzo">Prezzo in euro (0 = lo regalo)</label>
+                            <input type="number" id="libro-prezzo" name="prezzo" min="0" max="200" step="0.5" value="0" inputmode="decimal"></div>
+                    </div>
+                    <output class="anteprima-prezzo" id="anteprima-prezzo" for="libro-prezzo"></output>
+                    <div class="field"><label for="libro-nota">Nota (facoltativa)</label>
+                        <textarea id="libro-nota" name="nota" maxlength="200" placeholder="Es. Qualche sottolineatura a matita"></textarea></div>
+                    <div><button class="btn-main" type="submit">Pubblica annuncio</button></div>
+                </form>
+            </details>
+            <div class="toolbar">
+                <div class="search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                    <label class="sr-only" for="cerca-libri">Cerca un libro</label>
+                    <input type="search" id="cerca-libri" placeholder="Cerca per titolo o materia" autocomplete="off">
+                </div>
+                <div class="chips" id="chips-libri" role="group" aria-label="Filtra per prezzo"></div>
+            </div>
+            <div class="libri-grid" id="lista-libri"></div>
+        </section>
+
+        <!-- ============ SEZIONE: PROFILO (dati, privacy e diritti GDPR) ============ -->
+        <section id="vista-profilo" class="vista stretta" hidden>
+            <div class="page-head">
+                <h1 tabindex="-1">Il tuo profilo</h1>
+                <p>I tuoi dati e le tue attività. Qui puoi anche scaricare o cancellare tutto ciò che Hub Studenti sa di te.</p>
+            </div>
+            <div class="panel profilo">
+                <div class="profilo-top">
+                    <span class="avatar big" id="profilo-avatar" aria-hidden="true">?</span>
+                    <div><h2 id="profilo-nome">Nome Cognome</h2><p class="count" id="profilo-email" style="margin:0"></p></div>
+                </div>
+                <div class="profilo-grid">
+                    <div class="stat"><b id="stat-idee">0</b>Idee proposte</div>
+                    <div class="stat"><b id="stat-appunti">0</b>Appunti condivisi</div>
+                    <div class="stat"><b id="stat-libri">0</b>Libri messi a disposizione</div>
+                    <div class="stat"><b id="stat-eventi">0</b>Eventi a cui partecipi</div>
+                </div>
+            </div>
+
+            <section class="panel sezione-box" aria-labelledby="h-modifica">
+                <h2 id="h-modifica">Modifica i tuoi dati</h2>
+                <form class="form-body" style="padding:0" data-form="profilo" id="form-profilo">
+                    <div class="row2">
+                        <div class="field"><label for="p-nome">Nome</label><input type="text" id="p-nome" name="nome" maxlength="60" required autocomplete="given-name"></div>
+                        <div class="field"><label for="p-cognome">Cognome</label><input type="text" id="p-cognome" name="cognome" maxlength="60" required autocomplete="family-name"></div>
+                    </div>
+                    <div class="row2">
+                        <div class="field"><label for="profilo-anno">Anno</label><select id="profilo-anno" name="anno"></select></div>
+                        <div class="field"><label for="p-sezione">Sezione</label><input type="text" id="p-sezione" name="sezione" maxlength="3" required autocomplete="off"></div>
+                    </div>
+                    <div><button class="btn-main" type="submit">Salva</button></div>
+                </form>
+            </section>
+
+            <section class="panel sezione-box" aria-labelledby="h-password">
+                <h2 id="h-password">Cambia password</h2>
+                <form class="form-body" style="padding:0" data-form="password">
+                    <div class="field"><label for="pw-vecchia">Password attuale</label><input type="password" id="pw-vecchia" name="vecchia" required autocomplete="current-password"></div>
+                    <div class="row2">
+                        <div class="field"><label for="pw-nuova">Nuova password</label><input type="password" id="pw-nuova" name="nuova" required autocomplete="new-password" minlength="8"></div>
+                        <div class="field"><label for="pw-conferma">Conferma</label><input type="password" id="pw-conferma" name="conferma" required autocomplete="new-password"></div>
+                    </div>
+                    <div><button class="btn-main" type="submit">Cambia password</button></div>
+                </form>
+            </section>
+
+            <section class="panel sezione-box" aria-labelledby="h-privacy">
+                <h2 id="h-privacy">I tuoi dati e la privacy</h2>
+                <p id="consenso-info"></p>
+                <p>Leggi l'<a href="privacy.html" target="_blank" rel="noopener">informativa sulla privacy</a> e le <a href="regole.html" target="_blank" rel="noopener">regole di utilizzo</a>.</p>
+                <a class="btn-line" href="/api/me/export" download>Scarica i miei dati (JSON)</a>
+            </section>
+
+            <section class="panel sezione-box zona-pericolo" aria-labelledby="h-elimina">
+                <h2 id="h-elimina">Elimina il mio account</h2>
+                <p>Verranno cancellati per sempre il tuo account e tutto ciò che hai pubblicato: idee, sondaggi, appunti con le foto, commenti, annunci, voti. Non si può annullare.</p>
+                <form class="form-body" style="padding:0" data-form="elimina-account">
+                    <div class="field"><label for="el-password">Password</label><input type="password" id="el-password" name="password" required autocomplete="current-password"></div>
+                    <label class="check-riga"><input type="checkbox" name="conferma"><span>Ho capito: voglio eliminare definitivamente il mio account e i miei contenuti.</span></label>
+                    <div><button class="btn-danger" type="submit">Elimina il mio account</button></div>
+                </form>
+            </section>
+        </section>
+
+        <!-- ============ SEZIONE: ADMIN (solo rappresentanti; il server ricontrolla il ruolo) ============ -->
+        <section id="vista-admin" class="vista stretta" hidden>
+            <div class="page-head">
+                <h1 tabindex="-1">Strumenti dei rappresentanti</h1>
+                <p>Pubblica eventi e comunicazioni e gestisci le segnalazioni.</p>
+            </div>
+
+            <section class="panel sezione-box" aria-labelledby="h-scuola">
+                <h2 id="h-scuola">La tua scuola</h2>
+                <p class="count" id="scuola-riga" style="margin:0 0 .75rem"></p>
+                <p style="margin:0 0 .25rem">Codice d'invito: <b id="scuola-codice" style="font-family:monospace;font-size:1.125rem;letter-spacing:.06em"></b></p>
+                <p class="count" style="margin:0 0 .75rem">Condividilo solo con chi frequenta la tua scuola. Chi lo conosce può registrarsi. Se circola troppo, generane uno nuovo: quello vecchio smette subito di funzionare (gli iscritti restano).</p>
+                <div class="azioni" style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem">
+                    <button class="btn-text" type="button" data-azione="copia-link-invito">Copia il link d'invito</button>
+                    <button class="btn-text danger" type="button" data-azione="nuovo-codice">Genera un nuovo codice</button>
+                </div>
+                <form class="form-body" style="padding:0" data-form="scuola">
+                    <div class="row2">
+                        <div class="field"><label for="sc-soglia">Soglia sostegni per le idee</label><input type="number" id="sc-soglia" name="soglia" min="1" max="100000" required></div>
+                        <div class="field"><label for="sc-dominio">Dominio email (facoltativo)</label><input type="text" id="sc-dominio" name="dominio" maxlength="80" placeholder="@scuola.edu.it" autocapitalize="none"></div>
+                    </div>
+                    <div><button class="btn-main" type="submit">Salva impostazioni</button></div>
+                </form>
+            </section>
+
+            <details class="panel form-panel" open>
+                <summary>Nuovo evento</summary>
+                <form class="form-body" data-form="evento">
+                    <div class="field"><label for="ev-titolo">Titolo</label><input type="text" id="ev-titolo" name="titolo" maxlength="120" required></div>
+                    <div class="row2">
+                        <div class="field"><label for="ev-data">Data</label><input type="date" id="ev-data" name="data" required></div>
+                        <div class="field"><label for="ev-ora">Ora</label><input type="time" id="ev-ora" name="ora" required></div>
+                    </div>
+                    <div class="row2">
+                        <div class="field"><label for="ev-luogo">Luogo</label><input type="text" id="ev-luogo" name="luogo" maxlength="80"></div>
+                        <div class="field"><label for="evento-categoria">Categoria</label><select id="evento-categoria" name="categoria"></select></div>
+                    </div>
+                    <div class="field"><label for="ev-desc">Descrizione</label><textarea id="ev-desc" name="descrizione" maxlength="600"></textarea></div>
+                    <div><button class="btn-main" type="submit">Pubblica evento</button></div>
+                </form>
+            </details>
+
+            <details class="panel form-panel">
+                <summary>Nuova comunicazione</summary>
+                <form class="form-body" data-form="comunicazione">
+                    <div class="field"><label for="co-titolo">Titolo</label><input type="text" id="co-titolo" name="titolo" maxlength="120" required></div>
+                    <div class="field"><label for="co-testo">Testo</label><textarea id="co-testo" name="testo" maxlength="600"></textarea></div>
+                    <div><button class="btn-main" type="submit">Pubblica comunicazione</button></div>
+                </form>
+            </details>
+
+            <section class="panel sezione-box" aria-labelledby="h-segn">
+                <h2 id="h-segn">Segnalazioni aperte</h2>
+                <div id="lista-segnalazioni"></div>
+            </section>
+        </section>
+    </main>
+    <footer class="piede"><a href="privacy.html" target="_blank" rel="noopener">Informativa privacy</a> · <a href="regole.html" target="_blank" rel="noopener">Regole di utilizzo</a> · <a data-source-link href="#" rel="noopener">Source code (AGPL-3.0)</a></footer>
+
+    <!-- ===== BARRA INFERIORE (solo smartphone e iPad verticale) ===== -->
+    <nav class="tabbar" aria-label="Sezioni principali">
+        <a href="#bacheca" data-vista="bacheca"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Bacheca</a>
+        <a href="#idee" data-vista="idee"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10c1 1 1 2 1 3h6c0-1 0-2 1-3a6 6 0 0 0-4-10z"/></svg>Idee</a>
+        <a href="#appunti" data-vista="appunti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h10l4 4v12H5z"/><path d="M9 12h6M9 16h6"/></svg>Appunti</a>
+        <a href="#sondaggi" data-vista="sondaggi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>Sondaggi</a>
+        <a href="#libri" data-vista="libri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg>Libri</a>
+    </nav>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/bacheca.js"></script>
+</body>
+</html>

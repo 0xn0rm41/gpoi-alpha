@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<!--
+  REGISTER.HTML — Registrazione a Hub Studenti
+  Raccoglie codice scuola, nome, cognome, email, classe e password, controlla i dati
+  e crea l'account tramite Auth.registra() (vedi js/auth.js): il server invia un'email di conferma.
+  Grafica identica a index.html: se cambi i colori, cambiali in entrambi i file.
+-->
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0B3B45">
+    <title>Registrati – Hub Studenti</title>
+
+    <link rel="stylesheet" href="css/fonts.css">
+
+    <style>
+        /* ===== 1. COLORI E FONT ===== */
+        :root {
+            --spruce: #0B3B45;  --spruce-2: #12505D;  --amber: #F2A93B;
+            --paper: #F6F8F7;   --card: #FFFFFF;      --ink: #15262B;
+            --muted: #5B6B70;   --line: #D3DCDD;
+            --danger: #B42318;  --danger-bg: #FDECEA;
+            --ok: #17603A;      --ok-bg: #E6F4EC;
+            --admin: #4B3B8F;   --admin-bg: #EEEAFB;
+            --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+            --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        html { -webkit-text-size-adjust: 100%; }
+        body { margin: 0; font-family: var(--font-body); color: var(--ink); background: var(--paper);
+               line-height: 1.5; -webkit-font-smoothing: antialiased; }
+
+        /* ===== 2. STRUTTURA ===== */
+        .page { min-height: 100vh; min-height: 100dvh; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); }
+
+        /* ===== 3. PANNELLO VERDE ===== */
+        .brand { position: relative; overflow: hidden; background: var(--spruce); color: #fff;
+                 padding: clamp(1.75rem, 5vw, 4rem); display: flex; flex-direction: column; justify-content: space-between; gap: 2.5rem; }
+        .brand::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+                         background-image: radial-gradient(rgba(255,255,255,.11) 1.2px, transparent 1.2px); background-size: 22px 22px;
+                         -webkit-mask-image: linear-gradient(160deg, #000 0%, transparent 70%); mask-image: linear-gradient(160deg, #000 0%, transparent 70%); }
+        .brand > * { position: relative; }
+        .logo { display: inline-flex; align-items: center; gap: .75rem; font-family: var(--font-display); font-weight: 700; font-size: 1.25rem; letter-spacing: -.01em; text-decoration: none; color: inherit; }
+        .logo svg { width: 2.25rem; height: 2.25rem; flex: none; }
+        .brand h1 { margin: 0 0 1rem; font-family: var(--font-display); font-weight: 700; font-size: clamp(2rem, 3.6vw, 3.25rem);
+                    line-height: 1.08; letter-spacing: -.02em; max-width: 16ch; }
+        .brand-lead { margin: 0; max-width: 42ch; color: rgba(255,255,255,.78); font-size: 1.0625rem; }
+        .benefits { margin: 2.25rem 0 0; padding: 0; list-style: none; display: grid; gap: 1rem; max-width: 30rem; }
+        .benefits li { display: flex; align-items: flex-start; gap: .875rem; }
+        .benefits .ico { flex: none; width: 2rem; height: 2rem; border-radius: 50%; display: grid; place-items: center; background: var(--amber); color: var(--spruce); }
+        .benefits .ico svg { width: 1.125rem; height: 1.125rem; }
+        .benefits strong { display: block; font-weight: 600; }
+        .benefits small { color: rgba(255,255,255,.72); font-size: .9375rem; }
+        .brand-foot { margin: 0; font-size: .875rem; color: rgba(255,255,255,.65); }
+
+        /* ===== 4. FORM ===== */
+        .access { display: grid; place-items: center; padding: clamp(1.5rem, 5vw, 3rem);
+                  padding-bottom: max(clamp(1.5rem, 5vw, 3rem), env(safe-area-inset-bottom)); }
+        .card { width: 100%; max-width: 30rem; animation: rise .5s ease-out both; }
+        @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+        .card h2 { margin: 0 0 .375rem; font-family: var(--font-display); font-weight: 700; font-size: 1.875rem; letter-spacing: -.02em; line-height: 1.15; }
+        .card > p { margin: 0 0 1.5rem; color: var(--muted); }
+
+        .field { margin-bottom: 1.125rem; }
+        .row2 { display: grid; gap: 0 1rem; }
+        label, .label { display: block; margin-bottom: .375rem; font-size: .9375rem; font-weight: 600; }
+        input, select { width: 100%; min-height: 3.25rem; padding: .75rem 1rem; font: inherit; font-size: 1rem;   /* 16px: niente zoom su iPhone/iPad */
+                        color: var(--ink); background: var(--card); border: 1.5px solid var(--line); border-radius: .75rem; transition: border-color .15s, box-shadow .15s; }
+        input::placeholder { color: #8A989C; }
+        input:hover, select:hover { border-color: #B5C2C4; }
+        input:focus, select:focus { outline: none; border-color: var(--spruce-2); box-shadow: 0 0 0 4px rgba(18,80,93,.16); }
+        .hint { margin: .375rem 0 0; font-size: .8125rem; color: var(--muted); }
+
+        .pw { position: relative; }
+        .pw input { padding-right: 5.5rem; }
+        .pw-toggle { position: absolute; right: .375rem; top: 50%; transform: translateY(-50%); min-height: 2.5rem; padding: 0 .75rem;
+                     background: none; border: 0; border-radius: .5rem; font: inherit; font-size: .9375rem; font-weight: 600; color: var(--spruce-2); cursor: pointer; }
+        .pw-toggle:hover { background: rgba(18,80,93,.08); }
+
+        /* Indicatore di robustezza della password: 3 segmenti che si colorano (data-l = livello 0-3) */
+        .meter { display: grid; grid-template-columns: repeat(3, 1fr); gap: .25rem; margin-top: .5rem; }
+        .meter i { height: .3125rem; border-radius: 999px; background: #E1E8E9; transition: background .2s; }
+        .meter[data-l="1"] i:nth-child(-n+1) { background: #D9822B; }
+        .meter[data-l="2"] i:nth-child(-n+2) { background: #C9A227; }
+        .meter[data-l="3"] i { background: #2E8B57; }
+
+        .check { display: flex; align-items: flex-start; gap: .75rem; margin-bottom: 1.25rem; font-weight: 400; font-size: .9375rem; cursor: pointer; }
+        .check input { width: 1.25rem; height: 1.25rem; min-height: 0; margin: .125rem 0 0; flex: none; accent-color: var(--spruce); }
+        .check a { color: var(--spruce-2); font-weight: 600; }
+
+        #feedback { display: none; margin-bottom: 1.125rem; padding: .75rem 1rem; border-radius: .75rem; font-size: .9375rem; font-weight: 500; }
+        #feedback.show { display: block; }
+        #feedback.error { background: var(--danger-bg); color: var(--danger); }
+        #feedback.ok    { background: var(--ok-bg);     color: var(--ok); }
+
+        .btn, .btn-line { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 3.25rem; padding: .75rem 1rem;
+                          font: inherit; font-weight: 600; font-size: 1.0625rem; border-radius: .75rem; cursor: pointer; text-decoration: none;
+                          transition: background .15s, transform .1s; }
+        .btn { color: #fff; background: var(--spruce); border: 0; }
+        .btn:hover { background: var(--spruce-2); }
+        .btn:active { transform: translateY(1px); }
+        .btn:disabled { opacity: .7; cursor: progress; }
+        .btn-line { color: var(--spruce); background: transparent; border: 1.5px solid var(--spruce); }
+        .btn-line:hover { background: rgba(11,59,69,.07); }
+        .btn:focus-visible, .btn-line:focus-visible, .pw-toggle:focus-visible, .check a:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+
+        .divider { margin: 1.5rem 0 .875rem; text-align: center; color: var(--muted); font-size: .9375rem; }
+        .help { margin: 1.5rem 0 0; font-size: .8125rem; color: var(--muted); text-align: center; }
+
+        /* ===== 5. ADATTAMENTO AGLI SCHERMI ===== */
+        @media (min-width: 480px) { .row2 { grid-template-columns: 1fr 1fr; } }
+
+        @media (max-width: 899px) {
+            .page { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+            .brand { gap: 1.25rem; padding: 1.5rem 1.5rem 2.75rem; border-radius: 0 0 1.75rem 1.75rem; }
+            .brand h1 { font-size: clamp(1.75rem, 6vw, 2.5rem); max-width: 18ch; margin-bottom: .625rem; }
+            .brand-lead { font-size: 1rem; }
+            .benefits, .brand-foot { display: none; }
+            .access { align-items: start; padding-top: 2rem; }
+        }
+        @media (min-width: 600px) and (max-width: 899px) {
+            .brand { padding: 2rem 2.5rem 3.25rem; }
+            .access { padding-top: 2.75rem; }
+        }
+        .legal-links { margin: 1rem 0 0; font-size: .8125rem; text-align: center; color: var(--muted); }
+        .legal-links a { color: var(--spruce-2); }
+        @media (prefers-reduced-motion: reduce) { .card { animation: none; } * { transition: none !important; } }
+    </style>
+</head>
+<body>
+    <main class="page">
+
+        <!-- PANNELLO DI PRESENTAZIONE: cosa si può fare nella piattaforma -->
+        <section class="brand">
+            <a class="logo" href="index.html" aria-label="Hub Studenti, torna all'accesso">
+                <svg viewBox="0 0 40 40" aria-hidden="true">
+                    <rect width="40" height="40" rx="11" fill="#F2A93B"/>
+                    <rect x="8" y="9" width="10" height="10" rx="2.5" fill="#0B3B45"/>
+                    <rect x="22" y="9" width="10" height="6" rx="2" fill="#0B3B45"/>
+                    <rect x="22" y="18" width="10" height="13" rx="2.5" fill="#0B3B45"/>
+                    <rect x="8" y="22" width="10" height="9" rx="2.5" fill="#0B3B45"/>
+                </svg>
+                Hub Studenti
+            </a>
+            <div>
+                <h1>Entra nella community della tua scuola.</h1>
+                <p class="brand-lead">Crea il tuo account in un minuto con l'email scolastica.</p>
+                <ul class="benefits">
+                    <li><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span>
+                        <div><strong>Proponi e vota le idee</strong><small>Quelle più sostenute arrivano in assemblea.</small></div></li>
+                    <li><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span>
+                        <div><strong>Condividi gli appunti</strong><small>Una foto e due righe per aiutare i compagni.</small></div></li>
+                    <li><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span>
+                        <div><strong>Dai una seconda vita ai libri</strong><small>Regala o scambia quelli che non usi più.</small></div></li>
+                </ul>
+            </div>
+            <p class="brand-foot">Progetto open source gestito dai rappresentanti degli studenti.</p>
+        </section>
+
+        <!-- MODULO DI REGISTRAZIONE -->
+        <section class="access">
+            <div class="card">
+                <h2>Crea il tuo account</h2>
+                <p>Bastano pochi dati. Serve la tua email istituzionale.</p>
+
+                <!-- novalidate: i controlli e i messaggi (in italiano) sono nel JavaScript in fondo -->
+                <form id="registerForm" novalidate>
+                    <div class="row2">
+                        <div class="field"><label for="nome">Nome</label>
+                            <input type="text" id="nome" name="nome" required autocomplete="given-name" autocapitalize="words" placeholder="Mario"></div>
+                        <div class="field"><label for="cognome">Cognome</label>
+                            <input type="text" id="cognome" name="cognome" required autocomplete="family-name" autocapitalize="words" placeholder="Rossi"></div>
+                    </div>
+
+                    <div class="field">
+                        <label for="codice_scuola">Codice della scuola</label>
+                        <input type="text" id="codice_scuola" name="codice_scuola" required autocomplete="off" autocapitalize="characters"
+                               spellcheck="false" maxlength="16" placeholder="XXXXX-XXXXX" aria-describedby="codiceHint">
+                        <p class="hint" id="codiceHint">Te lo dà il rappresentante o l'amministratore della tua scuola.</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required autocomplete="email" inputmode="email"
+                               autocapitalize="none" spellcheck="false" aria-describedby="emailHint">
+                        <p class="hint" id="emailHint"></p>
+                    </div>
+
+                    <div class="row2">
+                        <div class="field"><label for="anno">Anno</label>
+                            <select id="anno" name="anno" required></select></div>
+                        <div class="field"><label for="sezione">Sezione</label>
+                            <input type="text" id="sezione" name="sezione" required maxlength="3" autocapitalize="characters" autocomplete="off" placeholder="B"></div>
+                    </div>
+
+                    <div class="field">
+                        <label for="password">Password</label>
+                        <div class="pw">
+                            <input type="password" id="password" name="password" required autocomplete="new-password" aria-describedby="pwHint">
+                            <button class="pw-toggle" type="button" data-for="password" aria-pressed="false">Mostra</button>
+                        </div>
+                        <div class="meter" id="meter" data-l="0" aria-hidden="true"><i></i><i></i><i></i></div>
+                        <p class="hint" id="pwHint"></p>
+                    </div>
+
+                    <div class="field">
+                        <label for="conferma">Conferma password</label>
+                        <div class="pw">
+                            <input type="password" id="conferma" name="conferma" required autocomplete="new-password">
+                            <button class="pw-toggle" type="button" data-for="conferma" aria-pressed="false">Mostra</button>
+                        </div>
+                    </div>
+
+                    <label class="check">
+                        <input type="checkbox" id="eta14" name="eta14" required>
+                        <span>Dichiaro di avere almeno 14 anni.</span>
+                    </label>
+                    <label class="check">
+                        <input type="checkbox" id="regole" name="regole" required>
+                        <span>Ho letto e accetto le <a href="regole.html" target="_blank" rel="noopener">regole di utilizzo</a> e l'<a href="privacy.html" target="_blank" rel="noopener">informativa sulla privacy</a>.</span>
+                    </label>
+
+                    <div id="feedback" role="status" aria-live="polite"></div>
+
+                    <button class="btn" type="submit" id="submitBtn">Crea account</button>
+                </form>
+
+                <p class="divider">Hai già un account?</p>
+                <a class="btn-line" href="index.html">Accedi</a>
+
+                <p class="help">Dopo la registrazione riceverai un'email per confermare l'indirizzo.</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/register.js"></script>
+</body>
+</html>

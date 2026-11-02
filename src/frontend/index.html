@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<!--
+  INDEX.HTML — Accesso a Hub Studenti (prima pagina del sito)
+  Email + password, con link per registrarsi (register.html) e per recuperare la password (password.html).
+  La logica sta in js/index.js; la configurazione (dominio scuola ecc.) arriva dal server (.env).
+-->
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0B3B45">
+    <title>Accedi – Hub Studenti</title>
+
+    <link rel="stylesheet" href="css/fonts.css">
+
+    <style>
+        /* ===== 1. COLORI E FONT (stessi di bacheca.html e register.html) ===== */
+        :root {
+            --spruce: #0B3B45;  --spruce-2: #12505D;  --amber: #F2A93B;
+            --paper: #F6F8F7;   --card: #FFFFFF;      --ink: #15262B;
+            --muted: #5B6B70;   --line: #D3DCDD;
+            --danger: #B42318;  --danger-bg: #FDECEA;
+            --ok: #17603A;      --ok-bg: #E6F4EC;
+            --admin: #4B3B8F;   --admin-bg: #EEEAFB;
+            --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+            --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        html { -webkit-text-size-adjust: 100%; }
+        body { margin: 0; font-family: var(--font-body); color: var(--ink); background: var(--paper);
+               line-height: 1.5; -webkit-font-smoothing: antialiased; }
+
+        /* ===== 2. STRUTTURA: due colonne (pannello + form); una sola su schermi piccoli ===== */
+        .page { min-height: 100vh; min-height: 100dvh; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
+
+        /* ===== 3. PANNELLO VERDE ===== */
+        .brand { position: relative; overflow: hidden; background: var(--spruce); color: #fff;
+                 padding: clamp(1.75rem, 5vw, 4rem); display: flex; flex-direction: column; justify-content: space-between; gap: 2.5rem; }
+        .brand::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+                         background-image: radial-gradient(rgba(255,255,255,.11) 1.2px, transparent 1.2px); background-size: 22px 22px;
+                         -webkit-mask-image: linear-gradient(160deg, #000 0%, transparent 70%); mask-image: linear-gradient(160deg, #000 0%, transparent 70%); }
+        .brand > * { position: relative; }
+        .logo { display: inline-flex; align-items: center; gap: .75rem; font-family: var(--font-display); font-weight: 700; font-size: 1.25rem; letter-spacing: -.01em; }
+        .logo svg { width: 2.25rem; height: 2.25rem; flex: none; }
+        .brand h1 { margin: 0 0 1rem; font-family: var(--font-display); font-weight: 700; font-size: clamp(2rem, 3.6vw, 3.25rem);
+                    line-height: 1.08; letter-spacing: -.02em; max-width: 15ch; }
+        .brand-lead { margin: 0; max-width: 42ch; color: rgba(255,255,255,.78); font-size: 1.0625rem; }
+        .preview { margin: 2.25rem 0 0; padding: 0; list-style: none; display: grid; gap: .75rem; max-width: 30rem; }
+        .preview li { display: flex; align-items: center; gap: 1rem; padding: .875rem 1rem; border-radius: .875rem;
+                      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.13); }
+        .preview .date { flex: none; width: 3.25rem; padding: .375rem 0; border-radius: .625rem; background: var(--amber); color: var(--spruce);
+                         text-align: center; font-family: var(--font-display); font-weight: 700; line-height: 1; }
+        .preview .date b { display: block; font-size: 1.25rem; }
+        .preview .date span { display: block; margin-top: .2rem; font-size: .75rem; font-weight: 600; }
+        .preview strong { display: block; font-weight: 600; }
+        .preview small { color: rgba(255,255,255,.7); font-size: .875rem; }
+        .brand-foot { margin: 0; font-size: .875rem; color: rgba(255,255,255,.65); }
+
+        /* ===== 4. FORM ===== */
+        .access { display: grid; place-items: center; padding: clamp(1.5rem, 5vw, 3rem);
+                  padding-bottom: max(clamp(1.5rem, 5vw, 3rem), env(safe-area-inset-bottom)); }
+        .card { width: 100%; max-width: 26rem; animation: rise .5s ease-out both; }
+        @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+        .card h2 { margin: 0 0 .375rem; font-family: var(--font-display); font-weight: 700; font-size: 1.875rem; letter-spacing: -.02em; line-height: 1.15; }
+        .card > p { margin: 0 0 1.75rem; color: var(--muted); }
+
+        .field { margin-bottom: 1.125rem; }
+        label { display: block; margin-bottom: .375rem; font-size: .9375rem; font-weight: 600; }
+        input { width: 100%; min-height: 3.25rem; padding: .75rem 1rem; font: inherit; font-size: 1rem;   /* 16px: niente zoom su iPhone/iPad */
+                color: var(--ink); background: var(--card); border: 1.5px solid var(--line); border-radius: .75rem; transition: border-color .15s, box-shadow .15s; }
+        input::placeholder { color: #8A989C; }
+        input:hover { border-color: #B5C2C4; }
+        input:focus { outline: none; border-color: var(--spruce-2); box-shadow: 0 0 0 4px rgba(18,80,93,.16); }
+        .hint { margin: .375rem 0 0; font-size: .8125rem; color: var(--muted); }
+
+        /* Campo password con pulsante Mostra/Nascondi dentro */
+        .pw { position: relative; }
+        .pw input { padding-right: 5.5rem; }
+        .pw-toggle { position: absolute; right: .375rem; top: 50%; transform: translateY(-50%); min-height: 2.5rem; padding: 0 .75rem;
+                     background: none; border: 0; border-radius: .5rem; font: inherit; font-size: .9375rem; font-weight: 600; color: var(--spruce-2); cursor: pointer; }
+        .pw-toggle:hover { background: rgba(18,80,93,.08); }
+
+        #feedback { display: none; margin-bottom: 1.125rem; padding: .75rem 1rem; border-radius: .75rem; font-size: .9375rem; font-weight: 500; }
+        #feedback.show { display: block; }
+        #feedback.error { background: var(--danger-bg); color: var(--danger); }
+        #feedback.ok    { background: var(--ok-bg);     color: var(--ok); }
+        #feedback.admin { background: var(--admin-bg);  color: var(--admin); }
+
+        .btn, .btn-line { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 3.25rem; padding: .75rem 1rem;
+                          font: inherit; font-weight: 600; font-size: 1.0625rem; border-radius: .75rem; cursor: pointer; text-decoration: none;
+                          transition: background .15s, transform .1s; }
+        .btn { color: #fff; background: var(--spruce); border: 0; }
+        .btn:hover { background: var(--spruce-2); }
+        .btn:active { transform: translateY(1px); }
+        .btn:disabled { opacity: .7; cursor: progress; }
+        .btn-line { color: var(--spruce); background: transparent; border: 1.5px solid var(--spruce); }
+        .btn-line:hover { background: rgba(11,59,69,.07); }
+        .btn:focus-visible, .btn-line:focus-visible, .pw-toggle:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+
+        .hint a { color: var(--spruce-2); font-weight: 600; }
+        .divider { margin: 1.75rem 0 .875rem; text-align: center; color: var(--muted); font-size: .9375rem; }
+        .help { margin: 1.5rem 0 0; font-size: .8125rem; color: var(--muted); text-align: center; }
+
+        /* ===== 5. TABLET VERTICALE E SMARTPHONE: pannello in alto, form sotto ===== */
+        @media (max-width: 899px) {
+            .page { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+            .brand { gap: 1.5rem; padding: 1.5rem 1.5rem 2.75rem; border-radius: 0 0 1.75rem 1.75rem; }
+            .brand h1 { font-size: clamp(1.75rem, 6vw, 2.5rem); max-width: 18ch; margin-bottom: .625rem; }
+            .brand-lead { font-size: 1rem; }
+            .preview, .brand-foot { display: none; }
+            .access { align-items: start; padding-top: 2rem; }
+        }
+        @media (min-width: 600px) and (max-width: 899px) {
+            .brand { padding: 2rem 2.5rem 3.25rem; }
+            .access { padding-top: 2.75rem; }
+        }
+        .legal-links { margin: 1rem 0 0; font-size: .8125rem; text-align: center; color: var(--muted); }
+        .legal-links a { color: var(--spruce-2); }
+        @media (prefers-reduced-motion: reduce) { .card { animation: none; } * { transition: none !important; } }
+    </style>
+</head>
+<body>
+    <main class="page">
+
+        <!-- PANNELLO DI PRESENTAZIONE (anteprima eventi: solo esempi) -->
+        <section class="brand">
+            <div class="logo">
+                <svg viewBox="0 0 40 40" aria-hidden="true">
+                    <rect width="40" height="40" rx="11" fill="#F2A93B"/>
+                    <rect x="8" y="9" width="10" height="10" rx="2.5" fill="#0B3B45"/>
+                    <rect x="22" y="9" width="10" height="6" rx="2" fill="#0B3B45"/>
+                    <rect x="22" y="18" width="10" height="13" rx="2.5" fill="#0B3B45"/>
+                    <rect x="8" y="22" width="10" height="9" rx="2.5" fill="#0B3B45"/>
+                </svg>
+                Hub Studenti
+            </div>
+            <div>
+                <h1>La nostra scuola, organizzata da noi.</h1>
+                <p class="brand-lead">Eventi, appunti e sondaggi in un unico posto, gestito dagli studenti per gli studenti.</p>
+                <ul class="preview" aria-label="Esempio di eventi in bacheca">
+                    <li><div class="date"><b>24</b><span>ott</span></div><div><strong>Assemblea d'istituto</strong><small>Aula magna, ore 10:00</small></div></li>
+                    <li><div class="date"><b>29</b><span>ott</span></div><div><strong>Torneo di pallavolo</strong><small>Palestra, dopo le lezioni</small></div></li>
+                    <li><div class="date"><b>05</b><span>nov</span></div><div><strong>Sportello di matematica</strong><small>Biblioteca, ore 14:30</small></div></li>
+                </ul>
+            </div>
+            <p class="brand-foot">Progetto open source gestito dai rappresentanti degli studenti.</p>
+        </section>
+
+        <!-- ACCESSO -->
+        <section class="access">
+            <div class="card">
+                <h2>Bentornato</h2>
+                <p>Accedi con la tua email istituzionale.</p>
+
+                <form id="loginForm" novalidate>
+                    <div class="field">
+                        <label for="email">Email scolastica</label>
+                        <input type="email" id="email" name="email" required autocomplete="email" inputmode="email"
+                               autocapitalize="none" spellcheck="false" aria-describedby="emailHint">
+                        <p class="hint" id="emailHint"></p>
+                    </div>
+
+                    <div class="field">
+                        <label for="password">Password</label>
+                        <div class="pw">
+                            <input type="password" id="password" name="password" required autocomplete="current-password">
+                            <button class="pw-toggle" type="button" data-for="password" aria-pressed="false">Mostra</button>
+                        </div>
+                        <p class="hint"><a href="password.html">Password dimenticata?</a></p>
+                    </div>
+
+                    <div id="feedback" role="status" aria-live="polite"></div>
+
+                    <button class="btn" type="submit" id="submitBtn">Entra nel portale</button>
+                </form>
+
+                <!-- Collegamento alla registrazione -->
+                <p class="divider">Non hai ancora un account?</p>
+                <a class="btn-line" href="register.html">Registrati</a>
+
+                <p class="help">Problemi con l'accesso? Scrivi ai rappresentanti d'istituto.</p>
+                <p class="legal-links"><a href="privacy.html">Informativa privacy</a> · <a href="regole.html">Regole di utilizzo</a></p>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/index.js"></script>
+</body>
+</html>

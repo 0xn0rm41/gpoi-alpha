@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Informativa privacy – Hub Studenti</title>
+    <link rel="stylesheet" href="css/fonts.css">
+    <link rel="stylesheet" href="css/legal.css">
+</head>
+<body>
+<header><a href="index.html">← Hub Studenti</a></header>
+<main>
+    <h1>Informativa sulla privacy</h1>
+    <p class="meta">Versione <span data-cfg="versione"></span> · ai sensi degli artt. 13 e 14 del Regolamento (UE) 2016/679 (GDPR)</p>
+
+    <div class="avviso" id="modello" hidden><strong>Modello da completare.</strong> I dati del titolare qui sotto sono ancora segnaposto: compilali nel file <code>.env</code> (<code>TITOLARE_NOME</code>, <code>TITOLARE_CONTATTO</code>) e fai verificare il testo da un legale o dal DPO prima di aprire il servizio al pubblico.</div>
+
+    <p>Questa informativa spiega quali dati personali tratta Hub Studenti, perché, per quanto tempo e come puoi controllarli. È scritta per essere letta da studenti: se qualcosa non è chiaro, scrivici.</p>
+
+    <h2>1. Chi è il titolare del trattamento</h2>
+    <p><strong data-cfg="titolare"></strong><br>Contatto per la privacy: <strong data-cfg="contatto"></strong></p>
+    <p id="dpo">Responsabile della protezione dei dati (DPO): <span></span></p>
+
+    <h2>2. Quali dati trattiamo</h2>
+    <div class="tab"><table>
+        <tr><th>Dati</th><th>Quando</th></tr>
+        <tr><td>Nome, cognome, email, classe (facoltativa), scuola di appartenenza</td><td>Registrazione (o modifica del profilo)</td></tr>
+        <tr><td>Password: salvata solo come impronta crittografica (scrypt), mai in chiaro</td><td>Registrazione, cambio password</td></tr>
+        <tr><td>Data e versione dell'accettazione di regole e informativa; data dell'ultimo accesso</td><td>Registrazione e accessi</td></tr>
+        <tr><td>Contenuti che pubblichi: idee, sondaggi, appunti (con la foto), commenti, annunci di libri, richieste «Lo voglio»</td><td>Quando li pubblichi</td></tr>
+        <tr><td>Voti e sostegni, partecipazione agli eventi, segnalazioni inviate</td><td>Quando usi queste funzioni</td></tr>
+        <tr><td>Cookie tecnico di sessione (<code>hub_sid</code>)</td><td>Accesso: serve a tenerti collegato</td></tr>
+    </table></div>
+    <p>Non chiediamo data di nascita, telefono, indirizzo né dati particolari (salute, religione, ecc.). <strong>Ti chiediamo di non inserirne</strong> nei contenuti che pubblichi, né di altre persone: niente foto in cui si riconoscono compagni o docenti.</p>
+    <p>Non usiamo cookie di profilazione, strumenti di statistica o pubblicità, né risorse caricate da siti esterni (i caratteri del sito sono ospitati sul nostro server). Il programma non registra indirizzi IP; il servizio di hosting o il proxy davanti al sito possono conservare log tecnici di sicurezza per un periodo limitato (vedi sezione 5). Per proteggere l'accesso dai tentativi di indovinare le password, gli indirizzi IP sono tenuti in memoria per pochi minuti e poi dimenticati.</p>
+
+    <h2>3. Perché li trattiamo e su quale base</h2>
+    <div class="tab"><table>
+        <tr><th>Finalità</th><th>Base giuridica</th></tr>
+        <tr><td>Creare e gestire il tuo account e farti usare le funzioni della piattaforma (eventi, idee, sondaggi, appunti, libri)</td><td>Tuo consenso (art. 6.1.a), dato al momento della registrazione e revocabile in ogni momento cancellando l'account</td></tr>
+        <tr><td>Sicurezza, prevenzione degli abusi e moderazione dei contenuti segnalati</td><td>Legittimo interesse del titolare a mantenere il servizio sicuro e rispettoso (art. 6.1.f)</td></tr>
+        <tr><td>Inviarti le email di servizio (conferma account, recupero password)</td><td>Necessità per fornire il servizio che hai richiesto (art. 6.1.b)</td></tr>
+    </table></div>
+    <p>La piattaforma è riservata a chi ha <strong>almeno 14 anni</strong>. Per gli utenti più giovani la legge italiana (art. 2-quinquies del Codice privacy) richiede il consenso di chi esercita la responsabilità genitoriale: in quel caso parlane con un genitore e con la tua scuola.</p>
+    <p>Il conferimento dei dati di registrazione è facoltativo, ma senza di essi non possiamo creare l'account. Non c'è alcun processo decisionale automatizzato né profilazione.</p>
+
+    <h2>4. Chi vede i tuoi dati</h2>
+    <ul>
+        <li><strong>Gli altri studenti</strong> vedono i contenuti che pubblichi con il tuo <em>nome e l'iniziale del cognome</em> (es. «Mario R.»). Il cognome completo, l'email e la classe <strong>non</strong> sono mostrati agli altri studenti, salvo la classe di chi chiede un libro, visibile al venditore di quel libro per organizzare la consegna a scuola.</li>
+        <li><strong>I rappresentanti con ruolo di amministratore</strong> della tua scuola possono eliminare contenuti della loro scuola, vedere le segnalazioni, il numero degli iscritti e gestire il codice d'invito (non vedono email né altri dati personali); l'accesso tecnico ai dati è limitato alle persone indicate dal titolare e vincolate alla riservatezza.</li>
+        <li><strong>Fornitori tecnici</strong> (hosting/server e servizio di invio email), nominati responsabili del trattamento ai sensi dell'art. 28 GDPR. I dati restano nello Spazio Economico Europeo.</li>
+        <li>Non vendiamo né cediamo i dati a terzi, e non li trasferiamo fuori dall'UE.</li>
+    </ul>
+
+    <h2>5. Quanto tempo li conserviamo</h2>
+    <div class="tab"><table>
+        <tr><th>Dato</th><th>Conservazione</th></tr>
+        <tr><td>Account e contenuti</td><td>Fino alla cancellazione dell'account (che puoi fare tu in ogni momento dal Profilo) oppure fino a 12 mesi dall'ultimo accesso, poi vengono cancellati automaticamente</td></tr>
+        <tr><td>Registrazioni mai confermate via email</td><td>3 giorni</td></tr>
+        <tr><td>Sessioni di accesso</td><td>14 giorni</td></tr>
+        <tr><td>Link di conferma / recupero password</td><td>24 ore / 1 ora</td></tr>
+        <tr><td>Segnalazioni risolte</td><td>90 giorni</td></tr>
+        <tr><td>Log tecnici del server o del proxy (se attivi)</td><td>Massimo 14 giorni</td></tr>
+        <tr><td>Copie di sicurezza (backup)</td><td>Massimo 30 giorni, poi sovrascritte o cancellate</td></tr>
+    </table></div>
+
+    <h2>6. I tuoi diritti</h2>
+    <p>Puoi in ogni momento:</p>
+    <ul>
+        <li><strong>accedere ai tuoi dati e riceverne una copia</strong> in formato leggibile (portabilità): <em>Profilo → «Scarica i miei dati»</em>;</li>
+        <li><strong>correggerli</strong>: <em>Profilo → «Modifica profilo»</em>;</li>
+        <li><strong>cancellarli</strong> (diritto all'oblio): <em>Profilo → «Elimina il mio account»</em>. Vengono eliminati l'account e tutto ciò che hai pubblicato, foto comprese; le copie di backup si cancellano entro 30 giorni;</li>
+        <li><strong>chiedere la limitazione</strong> del trattamento, <strong>opporti</strong> a un trattamento basato sul legittimo interesse, o <strong>revocare il consenso</strong> (senza effetti sul passato): scrivendo a <strong data-cfg="contatto"></strong>.</li>
+    </ul>
+    <p>Rispondiamo entro un mese. Se ritieni che i tuoi dati siano trattati in modo non corretto puoi presentare reclamo al <a href="https://www.garanteprivacy.it" rel="noopener">Garante per la protezione dei dati personali</a>.</p>
+
+    <h2>7. Violazioni dei dati</h2>
+    <p>Se si verificasse una violazione che presenta un rischio per te, il titolare la notificherà al Garante entro 72 ore e, quando necessario, informerà direttamente gli interessati.</p>
+
+    <h2>8. Aggiornamenti</h2>
+    <p>Se questa informativa cambia in modo sostanziale, cambierà la versione indicata in alto e ti avviseremo nel portale. Questa è la versione <span data-cfg="versione"></span>.</p>
+</main>
+<footer><a href="regole.html">Regole di utilizzo</a> · <a href="index.html">Accedi</a> · <a data-source-link href="#" rel="noopener">Source code (AGPL-3.0)</a></footer>
+<script src="js/api.js"></script>
+<script src="js/legal.js"></script>
+</body>
+</html>

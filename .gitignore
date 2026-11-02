@@ -1,0 +1,32 @@
+# Dipendenze
+node_modules/
+
+# Segreti e configurazione locale: MAI su Git
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Dati: database, foto caricate dagli studenti, backup (dati personali!)
+data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.db
+backups/
+
+# Log e temporanei
+*.log
+npm-debug.log*
+.cache/
+tmp/
+coverage/
+
+# Sistema operativo ed editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
