@@ -46,23 +46,23 @@ Prima versione con server e database reali.
 - Documentazione: `docs/HOSTING.md`, `docs/DATABASE.md`, `docs/eu/{gdpr,cookies,cra}`; SBOM CycloneDX.
 - `Dockerfile` e `docker-compose.yml` (facoltativi).
 
-### Modificato
-- Font **ospitati in locale** al posto di Google Fonts (nessun IP degli studenti inviato a terzi).
-- Script spostati in file `.js` esterni, così la CSP può vietare gli script inline.
-- Le pagine ora stanno in `src/frontend/`; il codice del server in `src/backend/`.
-- Tutti i permessi (admin, autore, voti singoli) sono verificati dal server, non più dal browser.
-- La commissione sui libri è spiegata come calcolo indicativo: nessun pagamento passa dalla piattaforma.
+### Modified
+- Fonts **locally hosted** instead of Google Fonts (no student IPs sent to third parties).
+- Scripts moved to external '.js' files, so CSP can ban inline scripts.
+- Pages are now in 'src/frontend/'; server code is in 'src/backend/'.
+- All permissions (admin, author, single votes) are verified by the server, no longer by the browser.
+- The book fee is explained as an indicative calculation: no payments go through the platform.
 
-### Corretto
-- Il ruolo admin non è più deducibile da una lista di email visibile a chiunque nel codice del sito.
-- Chiunque poteva registrarsi con un'email non sua: ora serve la conferma dal link ricevuto.
-- Gli account e i dati stavano solo nel browser di chi li creava: ora sono sul server.
-- Il link «Admin» restava visibile agli studenti per un problema di CSS sull'attributo `hidden`.
-- Le date degli eventi erano «giorni da oggi»: ora sono date e orari veri.
+### Corrected
+- The admin role is no longer deducible from a list of emails visible to anyone in the site code.
+- Anyone could register with an email that wasn't theirs: now you need confirmation from the link you received.
+- The accounts and data were only in the browser of the person creating them: now they are on the server.
+- The «Admin» link remained visible to students due to a CSS issue with the 'hidden' attribute.
+- The dates of the events were «days from today»: now they are real dates and times.
 
-### Rimosso
-- Schema Supabase (conservato in `docs/legacy/`) e consigli su hosting di terze parti come strada principale.
+### Removed
+- - Supabase Scheme (`docs/legacy/`) and recommendations for third-party hosting as the main route.
 
 ## [0.1.0] - prototipo
 
-- Pagine HTML con dati salvati nel `localStorage` del browser, senza server.
+-  HTML pages with data saved in the browser's 'localStorage', without a server.
