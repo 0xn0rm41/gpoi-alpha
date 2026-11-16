@@ -1,4 +1,4 @@
-# Hub Studenti
+<img width="1920" height="955" alt="Screenshot_20260919_153105" src="https://github.com/user-attachments/assets/669cd469-c5e6-4784-9ff6-a9fcd177d539" /># Hub Studenti
 
 Open-source student hub for schools: event board, idea voting, polls, shared notes and a second-hand book exchange.
 Every school gets its own private community, joined with an **invite code**; users sign up with their **own email**.
@@ -67,6 +67,12 @@ hub-studenti/
 | Market and feasibility | [docs/analisi_mercato/README.md](docs/analisi_mercato/README.md), [docs/fattibilita/README.md](docs/fattibilita/README.md) |
 | Plan, risks, process | [docs/project_management/README.md](docs/project_management/README.md) |
 | Contributing | [CONTRIBUTING.md](CONTRIBUTING.md), [docs/github/README.md](docs/github/README.md) |
+
+## Images
+
+<img width="700" height="900" alt="Screenshot_20260919_153035" src="https://github.com/user-attachments/assets/d26bb5b9-8ac1-441f-8981-a52d37280906" />
+<img width="700" height="900" alt="Screenshot_20260919_153105" src="https://github.com/user-attachments/assets/df1f92a3-cfa1-46b6-a619-d8d9204ba511" />
+
 
 ## Security and privacy in short
 
