@@ -2,7 +2,7 @@
 
 Index of the economic documents for Hub Studenti (open-source, AGPL-3.0-or-later, multi-school student hub; operator based in Italy/EU).
 
-> **Honesty rule.** Every number in these documents is a **labelled assumption** or a placeholder to be replaced with your own estimate. There are no market statistics here. Nothing is legal, tax or accounting advice: items marked "verify" must be checked with a commercialista / lawyer **+ ALL THIS FILES were written just as examples**.
+> **Honesty rule.** Every number in these documents is a **labelled assumption** or a placeholder to be replaced with your own estimate. There are no market statistics here. Nothing is legal, tax or accounting advice: items marked "verify" must be checked with a commercialista/lawyer **+ ALL THIS FILES were written just as examples**.
 
 | Document | What it answers |
 |---|---|
