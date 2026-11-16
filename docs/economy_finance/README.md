@@ -10,7 +10,7 @@ Index of the economic documents for Hub Studenti (open-source, AGPL-3.0-or-later
 | [PRICING_AND_REVENUE.md](PRICING_AND_REVENUE.md) | Price tiers, how to test willingness to pay (Van Westendorp, Gabor-Granger), unit economics, break-even |
 | [COSTS_AND_FUNDING.md](COSTS_AND_FUNDING.md) | Cost lines (hosting, domain, email, legal/DPO, insurance) and funding options (grants, EU programmes, donations) |
 | [LICENSING_STRATEGY.md](LICENSING_STRATEGY.md) | AGPL vs alternatives, dual licensing (CLA/DCO), trademark, contributor policy, what is sold |
-| [financial_model.xlsx](financial_model.xlsx) | The 36-month model (sheets: Assumptions, Scenarios, Monthly, BreakEven). Single source of truth for the numbers |
+| [gantt_student_hub.xlsx](gantt_student_hub.xlsx) | The 36-month model (sheets: Assumptions, Scenarios, Monthly, BreakEven). Single source of truth for the numbers |
 
 ## How the pieces fit
 
