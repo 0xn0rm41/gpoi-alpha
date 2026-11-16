@@ -1,4 +1,4 @@
-# Market Research (THEORY)
+# Market Analysis (THEORY)
 
 **Version:** 0.2.0\
 **Date:** 2026-11-16\
