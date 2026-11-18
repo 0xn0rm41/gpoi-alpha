@@ -1,13 +1,17 @@
 
-Changelog
+**Changelog**
 
 All notable changes are recorded here. Format inspired by Keep a Changelog; versions follow SemVer.
 
- - 2026-10-31
+ **- 2026-11-17 minor change**
+
+ Modified and renamed some docs
+
+ **- 2026-10-31**
 
 Multi-school, open-source and commercially usable. Breaking: configuration and sign-up changed.
 
-Added
+**Added**
 
 • Multi-school communities: scuole table, invite codes, scuola_id scoping on every content table; users of one school never see or modify another school's data (covered by tests).
 • Sign-up with a school invite code and the user's own email address (optional per-school domain restriction).
@@ -19,13 +23,13 @@ Added
 • GitHub scaffolding: CI workflow (Linux/Windows/macOS), Dependabot, PR template, CONTRIBUTING.md.
 • Tests for registration with codes, isolation, school admin, suspension, school deletion and the 001→002 migration.
 
-Changed
+**Changed**
 
 • All documentation rewritten in English and updated for the operator-as-controller model.
 • Book commission defaults to 0 (hidden in the UI unless set above 0).
 • Admin links, privacy notice and rules no longer assume a single school.
 
-Removed
+**Removed**
 
 • NOME_SCUOLA and DOMINIO_SCUOLA environment variables (schools live in the database).
 
@@ -33,7 +37,7 @@ Upgrade notes
 
 Run the server once: migration 002 runs automatically and moves existing data into one school named from NOME_SCUOLA if still set, otherwise "Default school". Find its invite code with npm run admin -- school-list. Back up data/ first.
 
- - 2026-10-30
+ **- 2026-10-30**
 
 First version with a real server and database.
 
@@ -49,7 +53,7 @@ Added
 • Documentation: docs/HOSTING.md, docs/DATABASE.md, docs/eu/{gdpr,cookies,cra}; CycloneDX SBOM.
 • Dockerfile and docker-compose.yml (optional).
 
-Changed
+**Changed**
 
 • Fonts locally hosted instead of Google Fonts (no student IPs sent to third parties).
 • Scripts moved to external .js files, so CSP can ban inline scripts.
@@ -57,7 +61,7 @@ Changed
 • All permissions (admin, author, single votes) are verified by the server, no longer by the browser.
 • The book fee is explained as an indicative calculation: no payments go through the platform.
 
-Fixed
+**Fixed**
 
 • The admin role is no longer deducible from a list of emails visible to anyone in the site code.
 • Fixed registration verification: users must now confirm their identity via the email link provided.
@@ -65,14 +69,11 @@ Fixed
 • Fixed a CSS issue where the hidden attribute failed, leaving the "Admin" link visible to students.
 • Fixed event dates: replaced relative formats ("days from today") with real dates and times.
 
-Removed
+**Removed**
 
 • Supabase schema (docs/legacy/) and recommendations for third-party hosting as the primary route.
 
  - Prototype
-
-
-Added
 
 • HTML pages with data saved in the browser's localStorage, without a server.
 I have updated and fully translated your changelog to English, aligning it with the official Keep a Changelog standard headings (Added, Changed, Fixed, Removed).
