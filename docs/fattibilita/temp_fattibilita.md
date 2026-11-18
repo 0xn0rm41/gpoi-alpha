@@ -1,4 +1,4 @@
-# Feasibility study template (Studio di fattibilità) - Hub Studenti
+# Temporary Feasibility study (Studio di fattibilità) - Hub Studenti
 
 | **Field** | **Value** |
 |---|---|
