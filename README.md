@@ -12,7 +12,9 @@ Licensed **AGPL-3.0-or-later**, with commercial licensing and a hosted service p
 
 > This Survey was made for students(from local schools) to help us determine or not adding a specific feature could be useful(and used).
 
-<img width="288" height="288" alt="sondaggio-hub" src="https://github.com/user-attachments/assets/3c575814-369e-4bdc-8769-ca20c40f947e" />
+<p align="center">
+  <img width="288" height="288" alt="sondaggio-hub" src="https://github.com/user-attachments/assets/3c575814-369e-4bdc-8769-ca20c40f947e" />
+</p>
 
 ## Quick start
 
