@@ -187,11 +187,10 @@
                         <p class="hint" id="emailHint"></p>
                     </div>
 
-                    <div class="row2">
-                        <div class="field"><label for="anno">Anno</label>
-                            <select id="anno" name="anno" required></select></div>
-                        <div class="field"><label for="sezione">Sezione</label>
-                            <input type="text" id="sezione" name="sezione" required maxlength="4" autocapitalize="characters" autocomplete="off" placeholder="B"></div>
+                    <div class="field">
+                        <label for="classe">Classe</label>
+                        <input type="text" id="classe" name="classe" required maxlength="10" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="5INFC" aria-describedby="classeHint">
+                        <p class="hint" id="classeHint">Anno e sezione insieme, come sul registro: per esempio 5INFC, 2CSAS, 3B.</p>
                     </div>
 
                     <div class="field">
@@ -233,6 +232,8 @@
         </section>
     </main>
 
+    <script src="js/i18n-en.js"></script>
+    <script src="js/i18n.js"></script>
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/register.js"></script>

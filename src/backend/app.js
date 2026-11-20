@@ -9,6 +9,8 @@ const S = require("./security");
 const authRoutes = require("./routes-auth");
 const meRoutes = require("./routes-me");
 const contenutiRoutes = require("./routes-contenuti");
+const calendario = require("./routes-calendario");
+const notifiche = require("./notifiche");
 
 function creaApp() {
     const app = express();
@@ -37,13 +39,20 @@ function creaApp() {
 
     // Dati pubblici di configurazione per le pagine di accesso/registrazione
     app.get("/api/config", (req, res) => res.json({
-        source_url: config.SOURCE_URL, password_min: config.PASSWORD_MIN, anni: config.ANNI,
+        source_url: config.SOURCE_URL, contatto_progetto: config.CONTATTO_PROGETTO, password_min: config.PASSWORD_MIN, anni: config.ANNI,
         versione_informativa: config.VERSIONE_INFORMATIVA, titolare: config.TITOLARE_NOME, contatto_privacy: config.TITOLARE_CONTATTO,
-        dpo: config.DPO_CONTATTO, commissione_percentuale: db.impostazioneNum("commissione_percentuale", 2)
+        dpo: config.DPO_CONTATTO, commissione_percentuale: db.impostazioneNum("commissione_percentuale", 0)
     }));
 
     app.use("/api/auth", authRoutes.router);
     app.use("/api/me", meRoutes.router);
+    app.use("/api/calendario-feed", calendario.feed);                 // public: token-authenticated ICS
+    app.use("/api/notifiche", notifiche.pubblico);                    // public: one-click unsubscribe
+    app.use("/api/calendario", calendario.router);
+    app.use("/api/macchinette", require("./routes-macchinette").router);
+    app.use("/api/assemblee", require("./routes-assemblee").router);
+    app.use("/api/bar", require("./routes-bar").router);
+    app.use("/api/notifiche", notifiche.router);
     app.use("/api", contenutiRoutes.router);
     app.use("/api", (req, res) => res.status(404).json({ error: "Non trovato." }));
 

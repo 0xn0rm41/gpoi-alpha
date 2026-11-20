@@ -78,7 +78,8 @@ test("registrazione: regole, privacy e verifica email", async () => {
     assert.equal((await c.post("/api/auth/register", { ...ok, consenso: false })).json.codice, "consenso");
     assert.equal((await c.post("/api/auth/register", { ...ok, eta14: false })).json.codice, "eta");
     assert.equal((await c.post("/api/auth/register", { ...ok, password: "corta" })).json.codice, "password");
-    assert.equal((await c.post("/api/auth/register", { ...ok, classe: "9ªZ" })).stato, 400);
+    assert.equal((await c.post("/api/auth/register", { ...ok, classe: "0Z" })).stato, 400);
+    assert.equal((await c.post("/api/auth/register", { ...ok, classe: "5INFC-TOO-LONG-CLASS" })).stato, 400);
     assert.equal((await c.post("/api/auth/register", ok)).stato, 200);
     // stessa risposta se l'email esiste già (nessuna enumerazione) e arriva un'email "hai già un account"
     const dup = await c.post("/api/auth/register", ok);
@@ -257,9 +258,12 @@ test("GDPR: esportazione, rettifica e cancellazione completa (foto comprese)", a
     assert.ok(!ex.testo.includes("pw_hash") && !ex.testo.includes("scrypt$"), "l'export non deve contenere l'impronta della password");
 
     // rettifica
-    assert.equal((await u.patch("/api/me", { nome: "Maria", cognome: "Verdi", classe: "4ªC" })).stato, 200);
+    assert.equal((await u.patch("/api/me", { nome: "Maria", cognome: "Verdi", classe: "4ªC" })).stato, 200);   // legacy format is normalised
     const me = (await u.get("/api/me")).json;
-    assert.equal(me.utente.nome, "Maria"); assert.equal(me.utente.classe, "4ªC");
+    assert.equal(me.utente.nome, "Maria"); assert.equal(me.utente.classe, "4C");
+    assert.equal((await u.patch("/api/me", { nome: "Maria", cognome: "Verdi", classe: "5infc" })).stato, 200);
+    assert.equal((await u.get("/api/me")).json.utente.classe, "5INFC");
+    assert.equal((await u.patch("/api/me", { nome: "Maria", cognome: "Verdi", classe: "2CSAS" })).stato, 200);
     assert.equal((await u.patch("/api/me", { nome: "X", cognome: "Y", classe: "99" })).stato, 400);
 
     // cancellazione: serve la password e la conferma
@@ -352,7 +356,7 @@ test("suspended school cannot sign in; deleting a school removes everything", as
     for (const f of foto) assert.equal(fs.existsSync(path.join(config.UPLOAD_DIR, f)), false);
 });
 
-test("migration 002 upgrades a v1 database into a default school", () => {
+test("migrations upgrade a v1 database (002 puts existing data into a default school)", () => {
     const Database = require("better-sqlite3");
     const f = path.join(tmp, "v1.sqlite");
     const old = new Database(f);
@@ -365,5 +369,23 @@ test("migration 002 upgrades a v1 database into a default school", () => {
         const db=require(${JSON.stringify(path.join(__dirname, "../backend/db"))});
         console.log(JSON.stringify({v:db.prepare("SELECT valore FROM meta WHERE chiave='schema_versione'").get().valore,
           n:db.prepare("SELECT COUNT(*) n FROM scuole").get().n, s:db.prepare("SELECT scuola_id FROM utenti").get().scuola_id!==null}));`]).toString();
-    assert.deepEqual(JSON.parse(out), { v: "2", n: 1, s: true });
+    assert.deepEqual(JSON.parse(out), { v: "7", n: 1, s: true });   // 001 baseline then every later migration
+});
+
+
+/* ---------------------------------------------------------------- robust password policy */
+test("password policy: length, common passwords, patterns, personal context", async () => {
+    const PP = require("../backend/password-policy");
+    const casi = [["abc", "corta"], ["password123", "comune"], ["Password2026", "comune"], ["12345678910", "schema"], ["qwertyuiop12", "comune"],
+        ["aaaaaaaaaaaa", "ripetuta"], ["mariorossi99", "contesto"], ["ForzaJuve!!", "comune"]];
+    for (const [p, codice] of casi) {
+        const v = PP.valuta(p, { nome: "Mario", cognome: "Rossi", email: "mario@x.it" });
+        assert.ok(v, p + " should be rejected"); assert.equal(v.codice, codice, p);
+    }
+    for (const ok of ["gatto verde corre piano", "Una-password-lunga-1", "tre mele sul davanzale"]) assert.equal(PP.valuta(ok, { nome: "Mario" }), null, ok);
+    const c = client();
+    const base = { nome: "Pia", cognome: "Verdi", email: "pia@scuola.test", classe: "5INFC", consenso: true, eta14: true, codice_scuola: CODICE };
+    const r = await c.post("/api/auth/register", { ...base, password: "password123" });
+    assert.equal(r.stato, 400); assert.equal(r.json.codice, "password");
+    assert.equal((await c.post("/api/auth/register", { ...base, password: "gatto verde corre piano" })).stato, 200);
 });

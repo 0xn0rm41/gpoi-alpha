@@ -8,6 +8,7 @@ const config = require("./config");
 const S = require("./security");
 const { testo, scelta, nomeBreve, asincrona } = require("./util");
 const { richiediLogin, soloAdmin } = require("./routes-me");
+const { emetti } = require("./notifiche");
 
 const { HttpError } = S;
 const router = express.Router();
@@ -70,10 +71,10 @@ router.get("/dati", (req, res) => {
     const opzioni = q(`SELECT o.id, o.sondaggio_id, o.testo, (SELECT COUNT(*) FROM sondaggi_voti v WHERE v.opzione_id = o.id) AS voti
                        FROM sondaggi_opzioni o JOIN sondaggi s ON s.id = o.sondaggio_id WHERE s.scuola_id = ? ORDER BY o.posizione`, S0);
     const mieiVoti = Object.fromEntries(q("SELECT sondaggio_id, opzione_id FROM sondaggi_voti WHERE utente_id = ?", me).map((v) => [v.sondaggio_id, v.opzione_id]));
-    const sondaggi = q(`SELECT s.id, s.domanda, s.creato_il, s.autore_id, u.nome, u.cognome FROM sondaggi s JOIN utenti u ON u.id = s.autore_id
+    const sondaggi = q(`SELECT s.id, s.domanda, s.creato_il, s.chiuso_il, s.autore_id, u.nome, u.cognome FROM sondaggi s JOIN utenti u ON u.id = s.autore_id
                         WHERE s.scuola_id = ? ORDER BY s.creato_il DESC LIMIT 100`, S0)
         .map((s) => ({ id: s.id, domanda: s.domanda, creato_il: s.creato_il, autore: nomeBreve(s.nome, s.cognome), mio: s.autore_id === me,
-                       mio_voto: mieiVoti[s.id] || null,
+                       mio_voto: mieiVoti[s.id] || null, chiuso: !!s.chiuso_il,
                        opzioni: opzioni.filter((o) => o.sondaggio_id === s.id).map((o) => ({ id: o.id, testo: o.testo, voti: o.voti })) }));
 
     const commenti = q(`SELECT c.id, c.appunto_id, c.testo, c.creato_il, c.autore_id, u.nome, u.cognome FROM commenti_appunti c
@@ -103,7 +104,9 @@ router.get("/dati", (req, res) => {
 
     res.json({
         eventi, comunicazioni, idee, sondaggi, appunti, libri,
-        config: { soglia_idee: soglia(req), commissione_percentuale: db.impostazioneNum("commissione_percentuale", 2),
+        seguiti: q("SELECT tipo, ref FROM iscrizioni WHERE utente_id = ?", me).map((r) => r.tipo + ":" + r.ref),
+        moduli: require("./modules").moduliScuola(S0),
+        config: { soglia_idee: soglia(req), commissione_percentuale: db.impostazioneNum("commissione_percentuale", 0),
                   max_opzioni_sondaggio: db.impostazioneNum("max_opzioni_sondaggio", 5) }
     });
 });
@@ -119,6 +122,7 @@ router.post("/eventi", soloAdmin, (req, res) => {
     db.prepare("INSERT INTO eventi (id, titolo, descrizione, luogo, categoria, inizio, autore_id, creato_il, scuola_id) VALUES (?,?,?,?,?,?,?,?,?)")
         .run(id, testo(b.titolo, "Titolo", 1, 120), testo(b.descrizione, "Descrizione", 0, 600, { multilinea: true }), testo(b.luogo, "Luogo", 0, 80),
              scelta(b.categoria, CATEGORIE, "Categoria"), Math.round(inizio), uid(req), adesso(), sc(req));
+    emetti({ scuolaId: sc(req), categoria: "eventi", chiave: "evento", dati: { t: String(b.titolo).trim().slice(0, 120) }, link: "/bacheca.html#bacheca", escludi: uid(req) });
     res.json({ id });
 });
 router.delete("/eventi/:id", soloAdmin, (req, res) => {
@@ -139,6 +143,7 @@ router.post("/comunicazioni", soloAdmin, (req, res) => {
     const b = req.body || {}, id = S.uuid();
     db.prepare("INSERT INTO comunicazioni (id, titolo, testo, autore_id, creato_il, scuola_id) VALUES (?,?,?,?,?,?)")
         .run(id, testo(b.titolo, "Titolo", 1, 120), testo(b.testo, "Testo", 0, 600, { multilinea: true }), uid(req), adesso(), sc(req));
+    emetti({ scuolaId: sc(req), categoria: "comunicazioni", chiave: "comunicazione", dati: { t: String(b.titolo).trim().slice(0, 120) }, link: "/bacheca.html#bacheca", escludi: uid(req) });
     res.json({ id });
 });
 router.delete("/comunicazioni/:id", soloAdmin, (req, res) => {
@@ -156,6 +161,7 @@ router.post("/idee", (req, res) => {
             .run(id, testo(b.titolo, "Titolo", 1, 80), testo(b.descrizione, "Descrizione", 0, 400, { multilinea: true }), uid(req), ora, sc(req));
         db.prepare("INSERT INTO voti_idee (idea_id, utente_id, creato_il) VALUES (?,?,?)").run(id, uid(req), ora);   // chi propone sostiene
     })();
+    emetti({ scuolaId: sc(req), categoria: "idee", chiave: "idea_nuova", dati: { t: String(b.titolo).trim().slice(0, 80) }, link: "/bacheca.html#idee", escludi: uid(req) });
     res.json({ id });
 });
 router.delete("/idee/:id", (req, res) => {
@@ -175,9 +181,10 @@ router.delete("/idee/:id/voto", (req, res) => {
 });
 router.post("/idee/:id/esponi", soloAdmin, (req, res) => {
     const soglia = sogliaScuola(sc(req));
-    const i = esiste("SELECT (SELECT COUNT(*) FROM voti_idee WHERE idea_id = idee.id) AS voti FROM idee WHERE id = ?", req.params.id, "Idea", req);
+    const i = esiste("SELECT titolo, (SELECT COUNT(*) FROM voti_idee WHERE idea_id = idee.id) AS voti FROM idee WHERE id = ?", req.params.id, "Idea", req);
     if (i.voti < soglia) throw new HttpError(400, "L'idea non ha ancora raggiunto la soglia.");
     db.prepare("UPDATE idee SET stato = 'esposta' WHERE id = ? AND scuola_id = ?").run(req.params.id, sc(req));
+    emetti({ scuolaId: sc(req), categoria: "idee", oggetto: { tipo: "idea", ref: req.params.id }, chiave: "idea_esposta", dati: { t: i.titolo }, link: "/bacheca.html#idee" });
     res.json({ ok: true });
 });
 
@@ -198,6 +205,7 @@ router.post("/sondaggi", (req, res) => {
         const ins = db.prepare("INSERT INTO sondaggi_opzioni (id, sondaggio_id, testo, posizione) VALUES (?,?,?,?)");
         opzioni.forEach((o, n) => ins.run(S.uuid(), id, o, n));
     })();
+    emetti({ scuolaId: sc(req), categoria: "sondaggi", chiave: "sondaggio_nuovo", dati: { t: domanda }, link: "/bacheca.html#sondaggi", escludi: uid(req) });
     res.json({ id });
 });
 router.delete("/sondaggi/:id", (req, res) => {
@@ -206,8 +214,23 @@ router.delete("/sondaggi/:id", (req, res) => {
     db.prepare("DELETE FROM sondaggi WHERE id = ?").run(req.params.id);
     res.json({ ok: true });
 });
+router.post("/sondaggi/:id/chiudi", (req, res) => {
+    const s = esiste("SELECT autore_id, domanda, chiuso_il FROM sondaggi WHERE id = ?", req.params.id, "Sondaggio", req);
+    permessoElimina(req, s.autore_id);
+    if (s.chiuso_il) throw new HttpError(400, "Il sondaggio è già chiuso.");
+    db.prepare("UPDATE sondaggi SET chiuso_il = ? WHERE id = ?").run(adesso(), req.params.id);
+    const righe = db.prepare(`SELECT o.testo, (SELECT COUNT(*) FROM sondaggi_voti v WHERE v.opzione_id = o.id) AS n FROM sondaggi_opzioni o
+                              WHERE o.sondaggio_id = ? ORDER BY o.posizione`).all(req.params.id);
+    const tot = righe.reduce((a, r) => a + r.n, 0);
+    const riepilogo = righe.map((r) => `${r.testo}: ${r.n}${tot ? " (" + Math.round(r.n * 100 / tot) + "%)" : ""}`).join(" · ");
+    const votanti = db.prepare("SELECT utente_id FROM sondaggi_voti WHERE sondaggio_id = ?").all(req.params.id).map((r) => r.utente_id);
+    emetti({ scuolaId: sc(req), categoria: "sondaggi", oggetto: { tipo: "sondaggio", ref: req.params.id }, chiave: "sondaggio_chiuso",
+             dati: { t: s.domanda, r: riepilogo }, link: "/bacheca.html#sondaggi", diretti: votanti.filter((x) => x !== uid(req)) });
+    res.json({ ok: true });
+});
 router.put("/sondaggi/:id/voto", (req, res) => {
-    esiste("SELECT id FROM sondaggi WHERE id = ?", req.params.id, "Sondaggio", req);
+    const so = esiste("SELECT id, chiuso_il FROM sondaggi WHERE id = ?", req.params.id, "Sondaggio", req);
+    if (so.chiuso_il) throw new HttpError(400, "Il sondaggio è chiuso.");
     const opz = trova("SELECT id FROM sondaggi_opzioni WHERE id = ? AND sondaggio_id = ?", String((req.body || {}).opzione), req.params.id);
     if (!opz) throw new HttpError(400, "Opzione non valida.");
     db.prepare(`INSERT INTO sondaggi_voti (sondaggio_id, utente_id, opzione_id, creato_il) VALUES (?,?,?,?)
@@ -243,6 +266,7 @@ router.post("/appunti", (req, res) => {
         db.prepare("INSERT INTO appunti (id, titolo, materia, testo, foto, autore_id, creato_il, scuola_id) VALUES (?,?,?,?,?,?,?,?)")
             .run(id, titolo, materia, t, nomeFile, uid(req), adesso(), sc(req));
     } catch (e) { db.rimuoviFoto(nomeFile); throw e; }
+    emetti({ scuolaId: sc(req), categoria: "appunti", chiave: "appunto_nuovo", dati: { t: titolo }, link: "/bacheca.html#appunti", escludi: uid(req) });
     res.json({ id });
 });
 router.get("/appunti/:id/foto", (req, res) => {
@@ -272,10 +296,11 @@ router.delete("/appunti/:id/voto", (req, res) => {
     res.json({ ok: true });
 });
 router.post("/appunti/:id/commenti", (req, res) => {
-    esiste("SELECT id FROM appunti WHERE id = ?", req.params.id, "Appunto", req);
+    const ap = esiste("SELECT id, titolo, autore_id FROM appunti WHERE id = ?", req.params.id, "Appunto", req);
     const id = S.uuid();
     db.prepare("INSERT INTO commenti_appunti (id, appunto_id, autore_id, testo, creato_il, scuola_id) VALUES (?,?,?,?,?,?)")
         .run(id, req.params.id, uid(req), testo((req.body || {}).testo, "Commento", 1, 300, { multilinea: true }), adesso(), sc(req));
+    emetti({ scuolaId: sc(req), oggetto: { tipo: "appunto", ref: req.params.id }, chiave: "commento", dati: { t: ap.titolo }, link: "/bacheca.html#appunti", escludi: uid(req), diretti: ap.autore_id === uid(req) ? [] : [ap.autore_id] });
     res.json({ id });
 });
 router.delete("/commenti/:id", (req, res) => {
@@ -296,6 +321,7 @@ router.post("/libri", (req, res) => {
     db.prepare(`INSERT INTO libri (id, titolo, materia, classe, condizione, prezzo_cent, nota, venditore_id, creato_il, scuola_id) VALUES (?,?,?,?,?,?,?,?,?,?)`)
         .run(id, testo(b.titolo, "Titolo", 1, 80), scelta(b.materia, MATERIE, "Materia"), scelta(b.classe, CLASSI, "Classe"),
              scelta(b.condizione, CONDIZIONI, "Condizione"), euro, testo(b.nota, "Nota", 0, 200, { multilinea: true }), uid(req), adesso(), sc(req));
+    emetti({ scuolaId: sc(req), categoria: "libri", chiave: "libro_nuovo", dati: { t: String(b.titolo).trim().slice(0, 80) }, link: "/bacheca.html#libri", escludi: uid(req) });
     res.json({ id });
 });
 router.delete("/libri/:id", (req, res) => {
@@ -322,12 +348,15 @@ router.delete("/libri/:id/richiesta", (req, res) => {
     res.json({ ok: true });
 });
 router.patch("/libri/:id/richieste/:utente", (req, res) => {
-    const l = esiste("SELECT venditore_id FROM libri WHERE id = ?", req.params.id, "Libro", req);
+    const l = esiste("SELECT venditore_id, titolo FROM libri WHERE id = ?", req.params.id, "Libro", req);
     if (l.venditore_id !== uid(req)) throw new HttpError(403, "Solo il venditore può rispondere alle richieste.");
     const stato = scelta((req.body || {}).stato, ["accettata", "rifiutata"], "Stato");
     const r = db.prepare("UPDATE richieste_libri SET stato = ? WHERE libro_id = ? AND richiedente_id = ?").run(stato, req.params.id, req.params.utente);
     if (!r.changes) throw new HttpError(404, "Richiesta non trovata.");
-    if (stato === "accettata") db.prepare("UPDATE libri SET stato = 'riservato' WHERE id = ? AND stato = 'disponibile'").run(req.params.id);
+    if (stato === "accettata") {
+        db.prepare("UPDATE libri SET stato = 'riservato' WHERE id = ? AND stato = 'disponibile'").run(req.params.id);
+        emetti({ scuolaId: sc(req), chiave: "libro_accettata", dati: { t: l.titolo }, link: "/bacheca.html#libri", diretti: [req.params.utente] });
+    }
     res.json({ ok: true });
 });
 

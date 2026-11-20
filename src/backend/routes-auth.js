@@ -5,7 +5,9 @@ const db = require("./db");
 const config = require("./config");
 const mail = require("./mail");
 const S = require("./security");
-const { testo, asincrona } = require("./util");
+const U = require("./util");
+const PP = require("./password-policy");
+const { testo, asincrona } = U;
 
 const router = express.Router();
 const { HttpError } = S;
@@ -33,11 +35,15 @@ function trovaScuola(codice, email) {
         throw new HttpError(400, `Questa scuola accetta solo email che finiscono con ${sc.dominio_email}.`, "dominio");
     return sc;
 }
-function controllaPassword(p, email) {
-    if (typeof p !== "string" || p.length < config.PASSWORD_MIN)
+/** Robust-password policy (see password-policy.js). ctx = { nome, cognome, email, scuola } improves the checks. */
+async function controllaPassword(p, ctx = {}) {
+    if (typeof ctx === "string") ctx = { email: ctx };
+    if (typeof p === "string" && p.length < config.PASSWORD_MIN)
         throw new HttpError(400, `La password deve avere almeno ${config.PASSWORD_MIN} caratteri.`, "password");
-    if (p.length > 200) throw new HttpError(400, "Password troppo lunga.", "password");
-    if (email && p.toLowerCase() === email.toLowerCase()) throw new HttpError(400, "La password non può essere uguale all'email.", "password");
+    const v = PP.valuta(p, ctx);
+    if (v) throw new HttpError(400, v.messaggio, "password");
+    if (config.PASSWORD_HIBP && (await PP.violazioni(p)) > 0)
+        throw new HttpError(400, "Questa password compare in violazioni di dati già note: scegline un'altra.", "password");
 }
 
 function creaToken(utenteId, scopo, durataMs) {
@@ -70,22 +76,22 @@ router.post("/register", asincrona(async (req, res) => {
     const nome = testo(b.nome, "Nome", 1, 60), cognome = testo(b.cognome, "Cognome", 1, 60);
     const email = normalizzaEmail(b.email);
     const scuola = trovaScuola(b.codice_scuola, email);
-    const classe = b.classe ? testo(b.classe, "Classe", 2, 6).toUpperCase() : null;      // optional
-    if (classe && !/^[1-5]ª[A-Z0-9]{1,3}$/.test(classe)) throw new HttpError(400, "Classe non valida.");
-    controllaPassword(b.password, email);
+    const classe = U.classe(b.classe);      // optional, e.g. 5INFC
+    await controllaPassword(b.password, { email, nome, cognome, scuola: scuola.nome });
     if (b.consenso !== true) throw new HttpError(400, "Devi accettare le regole e l'informativa privacy.", "consenso");
     if (b.eta14 !== true) throw new HttpError(400, "Per registrarti devi avere almeno 14 anni (sotto i 14 serve il consenso dei genitori: parlane con la scuola).", "eta");
 
     const hash = await S.hashPassword(b.password);       // calcolata sempre: tempi di risposta uguali
-    const esistente = db.prepare("SELECT id, nome FROM utenti WHERE email = ?").get(email);
+    const esistente = db.prepare("SELECT id, nome, lingua FROM utenti WHERE email = ?").get(email);
+    const lingua = U.linguaRichiesta(req);
     if (esistente) {
-        mail.inviaGiaRegistrato(email, esistente.nome).catch((e) => console.error("Invio email fallito:", e.message));
+        mail.inviaGiaRegistrato(email, esistente.nome, esistente.lingua).catch((e) => console.error("Invio email fallito:", e.message));
     } else {
         const id = S.uuid(), ora = Date.now();
-        db.prepare(`INSERT INTO utenti (id, email, nome, cognome, classe, pw_hash, verificato, consenso_il, consenso_versione, creato_il, ultimo_accesso, scuola_id)
-                    VALUES (?,?,?,?,?,?,0,?,?,?,?,?)`).run(id, email, nome, cognome, classe, hash, ora, config.VERSIONE_INFORMATIVA, ora, ora, scuola.id);
+        db.prepare(`INSERT INTO utenti (id, email, nome, cognome, classe, pw_hash, verificato, consenso_il, consenso_versione, creato_il, ultimo_accesso, scuola_id, lingua)
+                    VALUES (?,?,?,?,?,?,0,?,?,?,?,?,?)`).run(id, email, nome, cognome, classe, hash, ora, config.VERSIONE_INFORMATIVA, ora, ora, scuola.id, lingua);
         const token = creaToken(id, "verifica", GIORNO);
-        mail.inviaVerifica(email, nome, token).catch((e) => console.error("Invio email fallito:", e.message));
+        mail.inviaVerifica(email, nome, token, lingua).catch((e) => console.error("Invio email fallito:", e.message));
     }
     // Risposta identica in entrambi i casi: non si rivela se l'email è già registrata
     res.json({ ok: true });
@@ -133,10 +139,10 @@ router.post("/logout", (req, res) => {
 router.post("/forgot", (req, res) => {
     if (!limiteEmail.consenti(req.ip)) throw new HttpError(429, "Troppe richieste. Riprova più tardi.");
     const email = typeof (req.body || {}).email === "string" ? req.body.email.trim().toLowerCase() : "";
-    const u = email ? db.prepare("SELECT id, nome FROM utenti WHERE email = ?").get(email) : null;
+    const u = email ? db.prepare("SELECT id, nome, lingua FROM utenti WHERE email = ?").get(email) : null;
     if (u) {
         const token = creaToken(u.id, "reset", 60 * 60 * 1000);
-        mail.inviaReset(email, u.nome, token).catch((e) => console.error("Invio email fallito:", e.message));
+        mail.inviaReset(email, u.nome, token, u.lingua).catch((e) => console.error("Invio email fallito:", e.message));
     }
     res.json({ ok: true });      // sempre uguale: non si rivela se l'email esiste
 });
@@ -144,7 +150,7 @@ router.post("/forgot", (req, res) => {
 router.post("/reset", asincrona(async (req, res) => {
     if (!limiteEmail.consenti("reset|" + req.ip)) throw new HttpError(429, "Troppe richieste. Riprova più tardi.");
     const b = req.body || {};
-    controllaPassword(b.password);
+    await controllaPassword(b.password);
     const id = consumaToken(b.token, "reset");
     if (!id) throw new HttpError(400, "Il link non è valido o è scaduto. Richiedine uno nuovo.", "token");
     const hash = await S.hashPassword(b.password);

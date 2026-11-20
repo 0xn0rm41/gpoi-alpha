@@ -3,9 +3,11 @@
 const config = require("./config");
 const { creaApp } = require("./app");
 const { avviaPulizia } = require("./cleanup");
+const { avviaDigest } = require("./notifiche");
 
 const app = creaApp();
 avviaPulizia();
+avviaDigest();
 const server = app.listen(config.PORT, config.HOST, () => {
     console.log(`\nHub Studenti in ascolto su ${config.BASE_URL}  (porta ${config.PORT})`);
     if (!config.SMTP_HOST) console.log("ATTENZIONE: SMTP non configurato. I link delle email (conferma account, recupero password) compaiono qui nella console.");

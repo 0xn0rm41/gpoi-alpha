@@ -28,7 +28,7 @@ const $ = (id) => document.getElementById(id);
 // VA USATO SEMPRE con i testi scritti dagli utenti.
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const cssEsc = (s) => (window.CSS && CSS.escape) ? CSS.escape(s) : String(s).replace(/["\\]/g, "\\$&");
-const euro = (n) => new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR" }).format(n);
+const euro = (n) => new Intl.NumberFormat(LOC(), { style: "currency", currency: "EUR" }).format(n);
 const euroCent = (c) => euro(c / 100);
 
 // "3 ore fa", "2 giorni fa"…
@@ -59,7 +59,10 @@ const ICONE = {
     bandiera: '<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',
     idea: '<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10c1 1 1 2 1 3h6c0-1 0-2 1-3a6 6 0 0 0-4-10z"/>',
     sondaggio: '<path d="M5 20V10M12 20V4M19 20v-7"/>', appunti: '<path d="M5 4h10l4 4v12H5z"/><path d="M9 12h6M9 16h6"/>',
-    libro: '<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/>'
+    libro: '<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/>',
+    campana: '<path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15z"/><path d="M10 21a2 2 0 0 0 4 0"/>',
+    calendario: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+    piu: '<circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/>'
 };
 const svg = (nome) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONE[nome]}</svg>`;
 const vuoto = (titolo, testo) => `<div class="empty"><strong>${esc(titolo)}</strong>${esc(testo)}</div>`;
@@ -95,6 +98,8 @@ const commentiAperti = new Set();
 const puoiEliminare = (item) => isAdmin() || item.mio;
 const btnElimina = (coll, item) => puoiEliminare(item)
     ? `<button class="btn-text danger" type="button" data-azione="elimina" data-coll="${coll}" data-id="${esc(item.id)}">${svg("cestino")}Elimina</button>` : "";
+const seguito = (tipo, ref) => !!(D.seguiti || []).includes(tipo + ":" + (ref || ""));
+const btnSegui = (tipo, id) => `<button class="btn-text segui" type="button" data-azione="segui" data-tipo="${tipo}" data-id="${esc(id)}" aria-pressed="${seguito(tipo, id)}">${svg("campana")}<span>${seguito(tipo, id) ? "Segui già" : "Segui"}</span></button>`;
 const btnSegnala = (tipo, item) => item.mio ? ""
     : `<button class="btn-text" type="button" data-azione="segnala" data-tipo="${tipo}" data-id="${esc(item.id)}" aria-label="Segnala questo contenuto">${svg("bandiera")}Segnala</button>`;
 
@@ -116,9 +121,9 @@ function quando(ts) {
     if (g <= 0) return "Oggi";
     if (g === 1) return "Domani";
     if (g < 7) return "Tra " + g + " giorni";
-    return new Date(ts).toLocaleDateString("it-IT", { weekday: "long" });
+    return new Date(ts).toLocaleDateString(LOC(), { weekday: "long" });
 }
-const oraDi = (ts) => new Date(ts).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+const oraDi = (ts) => new Date(ts).toLocaleTimeString(LOC(), { hour: "2-digit", minute: "2-digit" });
 
 // Pulsanti-filtro (chips): elenco = voci, gruppo = chiave in FILTRI
 function disegnaChips(idContenitore, gruppo, elenco) {
@@ -171,7 +176,7 @@ function renderBacheca() {
 
 function htmlEvento(e) {
     const d = new Date(e.inizio);
-    const mese = d.toLocaleDateString("it-IT", { month: "short" }).replace(".", "");
+    const mese = d.toLocaleDateString(LOC(), { month: "short" }).replace(".", "");
     return `<article class="event">
         <div class="date" aria-hidden="true"><b>${d.getDate()}</b><span>${esc(mese)}</span></div>
         <div>
@@ -205,7 +210,7 @@ function renderIdee() {
                 ${i.descrizione ? `<p class="desc">${esc(i.descrizione)}</p>` : ""}
                 <div class="progress ${pronta ? "done" : ""}" role="img" aria-label="${perc}% della soglia"><i style="width:${perc}%"></i></div>
                 <span class="count">${i.voti} di ${soglia} sostegni</span>
-                <div class="azioni">${esponi}${btnSegnala("idea", i)}${btnElimina("idee", i)}</div>
+                <div class="azioni">${esponi}${btnSegui("idea", i.id)}${btnSegnala("idea", i)}${btnElimina("idee", i)}</div>
             </div>
         </article>`;
     }).join("") : vuoto("Nessuna idea, per ora", "Sii il primo a proporne una!");
@@ -216,7 +221,7 @@ function renderSondaggi() {
     $("lista-sondaggi").innerHTML = D.sondaggi.length ? D.sondaggi.map((p) => {
         const totale = p.opzioni.reduce((t, o) => t + o.voti, 0);
         let corpo;
-        if (!p.mio_voto || sondaggiInModifica.has(p.id)) {
+        if (!p.chiuso && (!p.mio_voto || sondaggiInModifica.has(p.id))) {
             corpo = `<div role="radiogroup" aria-label="Opzioni">${p.opzioni.map((o) =>
                 `<label class="opt"><input type="radio" name="voto-${esc(p.id)}" value="${esc(o.id)}" ${p.mio_voto === o.id ? "checked" : ""}><span>${esc(o.testo)}</span></label>`).join("")}</div>
                 <button class="btn-main" type="button" data-azione="vota-sondaggio" data-id="${esc(p.id)}">Vota</button>`;
@@ -229,8 +234,8 @@ function renderSondaggi() {
             }).join("") + `<button class="btn-text" type="button" data-azione="cambia-voto" data-id="${esc(p.id)}">Cambia voto</button>`;
         }
         return `<article class="panel poll"><h3>${esc(p.domanda)}</h3>
-            <p class="meta"><span>Di ${esc(p.autore)}, ${tempoFa(p.creato_il)}</span><span>${totale} voti</span></p>${corpo}
-            <div class="azioni">${btnSegnala("sondaggio", p)}${btnElimina("sondaggi", p)}</div></article>`;
+            <p class="meta"><span>Di ${esc(p.autore)}, ${tempoFa(p.creato_il)}</span><span>${totale} voti</span>${p.chiuso ? '<span class="badge">Sondaggio chiuso</span>' : ""}</p>${corpo}
+            <div class="azioni">${(isAdmin() || p.mio) && !p.chiuso ? `<button class="btn-text" type="button" data-azione="chiudi-sondaggio" data-id="${esc(p.id)}">Chiudi e avvisa i votanti</button>` : ""}${btnSegui("sondaggio", p.id)}${btnSegnala("sondaggio", p)}${btnElimina("sondaggi", p)}</div></article>`;
     }).join("") : vuoto("Nessun sondaggio", "Creane uno con il pulsante qui sopra.");
 }
 
@@ -328,11 +333,11 @@ function renderProfilo() {
     $("profilo-email").textContent = u.email + (u.scuola ? " · " + u.scuola : "") + (u.admin ? " – amministratore" : "");
     $("stat-idee").textContent = s.idee; $("stat-appunti").textContent = s.appunti; $("stat-libri").textContent = s.libri; $("stat-eventi").textContent = s.eventi;
     $("link-admin").hidden = !u.admin;
-    $("consenso-info").textContent = "Hai accettato regole e informativa il " + new Date(u.consenso_il).toLocaleDateString("it-IT") + " (versione " + u.consenso_versione + ").";
+    $("consenso-info").textContent = "Hai accettato regole e informativa il " + new Date(u.consenso_il).toLocaleDateString(LOC()) + " (versione " + u.consenso_versione + ").";
     const f = $("form-profilo").elements;
     if (document.activeElement && !$("form-profilo").contains(document.activeElement)) {
         f.nome.value = u.nome; f.cognome.value = u.cognome;
-        f.anno.value = (u.classe || "").slice(0, 2); f.sezione.value = (u.classe || "").slice(2);
+        f.classe.value = u.classe || "";
     }
 }
 
@@ -389,6 +394,15 @@ const AZIONI = {
         const e = D.eventi.find((x) => x.id === id);
         if (e.partecipo) { await Api.del("/api/eventi/" + id + "/partecipa"); avviso("Partecipazione annullata: " + e.titolo); }
         else { await Api.put("/api/eventi/" + id + "/partecipa"); avviso("Ti sei segnato a: " + e.titolo); }
+    },
+    // Follow bell: new activity on an idea or poll arrives in the bell (and by e-mail if enabled in the profile)
+    async segui({ tipo, id }) {
+        if (seguito(tipo, id)) { await Api.del("/api/notifiche/segui", { tipo, ref: id }); avviso("Non segui più questo contenuto."); }
+        else { await Api.put("/api/notifiche/segui", { tipo, ref: id }); avviso("Ti avviseremo degli aggiornamenti."); }
+    },
+    async "chiudi-sondaggio"({ id }) {
+        if (!confirm("Chiudere il sondaggio? Nessuno potrà più votare e chi ha votato riceverà i risultati.")) return false;
+        await Api.post("/api/sondaggi/" + id + "/chiudi"); avviso("Sondaggio chiuso: risultati inviati.");
     },
     // Filtri (chips) di eventi, appunti e libri
     filtro({ gruppo, valore }) { FILTRI[gruppo] = valore; return "locale"; },
@@ -581,7 +595,7 @@ const FORM = {
     // ---- Profilo e diritti sui dati (GDPR) ----
     async profilo(form) {
         const f = form.elements;
-        if (await inviaForm(form, () => Api.patch("/api/me", { nome: f.nome.value, cognome: f.cognome.value, classe: f.anno.value + f.sezione.value.toUpperCase() }), "Profilo aggiornato.")) await ricarica();
+        if (await inviaForm(form, () => Api.patch("/api/me", { nome: f.nome.value, cognome: f.cognome.value, classe: f.classe.value }), "Profilo aggiornato.")) await ricarica();
     },
     async password(form) {
         const f = form.elements;
@@ -628,7 +642,6 @@ function riempiSelect(id, elenco) { $(id).innerHTML = elenco.map((v) => `<option
     riempiSelect("libro-materia", Object.keys(MATERIE));
     riempiSelect("libro-classe", CLASSI);
     riempiSelect("libro-cond", CONDIZIONI);
-    riempiSelect("profilo-anno", CLASSI);
     riempiSelect("evento-categoria", CATEGORIE_EVENTI.slice(1));
 
     $("soglia-testo").textContent = CFG().soglia_idee;

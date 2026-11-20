@@ -47,7 +47,8 @@ const config = {
     PUBLIC_DIR: path.join(ROOT, "src", "frontend"),
 
     // ---- Scuola e regole di registrazione ----
-    PASSWORD_MIN: num(env.PASSWORD_MIN, 8),
+    PASSWORD_MIN: num(env.PASSWORD_MIN, 10),
+    PASSWORD_HIBP: env.PASSWORD_HIBP === "1" || env.PASSWORD_HIBP === "true",   // optional breached-password check (k-anonymity), off by default
     ANNI: ["1ª", "2ª", "3ª", "4ª", "5ª"],
 
     // ---- Email (verifica indirizzo e recupero password) ----
@@ -75,8 +76,9 @@ const config = {
     VERSIONE_INFORMATIVA: env.VERSIONE_INFORMATIVA || "2026-10",
 
     // ---- Dati del titolare del trattamento (compaiono in privacy.html) ----
-    SOURCE_URL: env.SOURCE_URL || "https://github.com/0xn0rm41/hub-studenti",   // AGPL §13: link to the running version's source
+    SOURCE_URL: env.SOURCE_URL || "https://github.com/0xn0rm41/gpoi-alpha",   // AGPL §13: link to the running version's source
     TITOLARE_NOME: env.TITOLARE_NOME || "[NOME DEL TITOLARE: chi gestisce il servizio]",
+    CONTATTO_PROGETTO: env.CONTATTO_PROGETTO || "",     // project e-mail where schools request optional modules (e.g. the bar)
     TITOLARE_CONTATTO: env.TITOLARE_CONTATTO || "[EMAIL DI CONTATTO PRIVACY]",
     DPO_CONTATTO: env.DPO_CONTATTO || "",
 
