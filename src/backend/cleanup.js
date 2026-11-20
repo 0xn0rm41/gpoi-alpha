@@ -11,6 +11,10 @@ function pulisci() {
     esito.token = db.prepare("DELETE FROM token_email WHERE scade_il < ?").run(ora).changes;
     esito.segnalazioni = db.prepare("DELETE FROM segnalazioni WHERE stato = 'risolta' AND creato_il < ?").run(ora - 90 * GIORNO).changes;
 
+    // Bar pre-orders contain names: keep 30 days
+    esito.bar_ordini = db.prepare("DELETE FROM bar_ordini WHERE creato_il < ?").run(ora - 30 * GIORNO).changes;
+    esito.notifiche = db.prepare("DELETE FROM notifiche WHERE creato_il < ?").run(ora - 60 * GIORNO).changes;
+
     // Account mai confermati
     const nonVerificati = db.prepare("SELECT id FROM utenti WHERE verificato = 0 AND creato_il < ?")
         .all(ora - config.RITENZIONE_NON_VERIFICATI_GIORNI * GIORNO);

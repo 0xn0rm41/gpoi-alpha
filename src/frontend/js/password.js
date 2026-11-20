@@ -6,7 +6,7 @@
     const passoEmail = document.getElementById("passo-email"), passoNuova = document.getElementById("passo-nuova");
     try { await Auth.init(); } catch (e) { /* il server segnalerà l'errore all'invio */ }
     (token ? passoNuova : passoEmail).hidden = false;
-    document.getElementById("pwHint").textContent = "Almeno " + HUB.PASSWORD_MIN + " caratteri.";
+    document.getElementById("pwHint").textContent = "Almeno " + HUB.PASSWORD_MIN + " caratteri. Meglio una frase di 3-4 parole a caso.";
 
     document.getElementById("formEmail").addEventListener("submit", async function (e) {
         e.preventDefault();

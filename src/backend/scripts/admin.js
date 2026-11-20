@@ -39,6 +39,18 @@ switch (cmd) {
         break;
     case "school-code": { const r = scuola(a); const n = db.nuovoCodiceInvito(); db.prepare("UPDATE scuole SET codice_invito = ? WHERE id = ?").run(n, r.id); console.log(`${r.nome}: new invite code ${db.formattaCodice(n)}`); break; }
     case "school-suspend":  { const r = scuola(a); db.prepare("UPDATE scuole SET attiva = 0 WHERE id = ?").run(r.id); db.prepare("DELETE FROM sessioni WHERE utente_id IN (SELECT id FROM utenti WHERE scuola_id = ?)").run(r.id); console.log(`${r.nome}: suspended (sessions closed, no sign-in or sign-up).`); break; }
+    case "school-module": {     // school-module <school> <module> on|off   (the bar module is enabled only after the school asked for it by e-mail)
+        const M = require("../modules"), r = scuola(a), nome = process.argv[4], v = process.argv[5];
+        if (!nome || !["on", "off"].includes(v)) { console.error("Usage: school-module <school> <" + Object.keys(M.MODULI).join("|") + "> on|off"); process.exit(1); }
+        M.impostaModulo(r.id, nome, v === "on"); console.log(`${r.nome}: module '${nome}' ${v}.`); break;
+    }
+    case "school-option": {     // school-option <school> <module> <key> <value>
+        const M = require("../modules"), r = scuola(a), [, , , , m, k, v] = process.argv;
+        if (!M.MODULI[m] || !k || v === undefined) { console.error("Usage: school-option <school> <module> <key> <value>"); process.exit(1); }
+        let val = v; try { val = JSON.parse(v); } catch { /* keep string */ }
+        M.impostaOpzione(r.id, m, k, val); console.log(`${r.nome}: ${m}.${k} = ${JSON.stringify(val)}`); break;
+    }
+    case "school-modules": { const M = require("../modules"), r = scuola(a); console.log(JSON.stringify(M.moduliScuola(r.id), null, 2)); break; }
     case "school-activate": { const r = scuola(a); db.prepare("UPDATE scuole SET attiva = 1 WHERE id = ?").run(r.id); console.log(`${r.nome}: active.`); break; }
     case "school-delete": {
         const r = scuola(a);
@@ -77,6 +89,9 @@ switch (cmd) {
   school-code <school>               generates a new invite code
   school-suspend|school-activate <school>
   school-delete <school> --yes       deletes a school with all users and content
+  school-module <school> <module> on|off   enable/disable calendar|macchinette|assemblee|bar for a school
+  school-option <school> <module> <key> <value>   e.g. assemblee preavviso_giorni 3
+  school-modules <school>            shows which modules are enabled
   school-of <email>                  shows which school a user belongs to
   list                   elenca gli utenti
   set <chiave> <valore>  chiavi: ${CHIAVI.join(", ")}

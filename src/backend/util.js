@@ -22,4 +22,38 @@ const nomeBreve = (nome, cognome) => nome + (cognome ? " " + cognome[0].toUpperC
 /** Rende asincrone le rotte compatibili con Express 4 (gli errori vanno al gestore comune). */
 const asincrona = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
-module.exports = { testo, scelta, nomeBreve, asincrona };
+/** Class code such as 5INFC, 2CSAS, 3B (legacy "3ªB" is accepted). Returns null when empty, throws when invalid. */
+function classe(v) {
+    const c = String(v == null ? "" : v).toUpperCase().replace(/[\s.ª°º-]/g, "");
+    if (!c) return null;
+    if (!/^(?=.{2,10}$)[1-9][A-Z0-9]*[A-Z][A-Z0-9]*$/.test(c)) throw new HttpError(400, "Classe non valida (esempi: 5INFC, 2CSAS, 3B).");
+    return c;
+}
+module.exports = { classe, testo, scelta, nomeBreve, asincrona };
+
+/* ---- time zone helpers: the school's local day, independent of the server's time zone ---- */
+const TZ = process.env.TZ_SCUOLA || "Europe/Rome";
+const fmt = new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+/** { giorno: "YYYY-MM-DD", minuti: minutes since local midnight } of a timestamp in the school's time zone. */
+function oraLocale(ts) {
+    const p = Object.fromEntries(fmt.formatToParts(new Date(ts)).map((x) => [x.type, x.value]));
+    return { giorno: `${p.year}-${p.month}-${p.day}`, minuti: Number(p.hour) * 60 + Number(p.minute) };
+}
+/** All-day dates are "floating": stored as UTC midnight of that calendar day. */
+function dataFloating(v, nomeCampo = "Data") {
+    if (typeof v === "number") v = new Date(v).toISOString().slice(0, 10);
+    if (typeof v !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(v)) throw new HttpError(400, `${nomeCampo}: data non valida.`);
+    const t = Date.parse(v + "T00:00:00Z");
+    if (Number.isNaN(t) || new Date(t).toISOString().slice(0, 10) !== v) throw new HttpError(400, `${nomeCampo}: data non valida.`);
+    return t;
+}
+module.exports.oraLocale = oraLocale;
+module.exports.dataFloating = dataFloating;
+module.exports.TZ = TZ;
+
+/** Language for a request: logged-in user's choice, else X-Lang header, else Accept-Language, else Italian. */
+function linguaRichiesta(req) {
+    const v = (req.utente && req.utente.lingua) || req.get("x-lang") || (req.get("accept-language") || "").slice(0, 2);
+    return String(v).toLowerCase().startsWith("en") ? "en" : "it";
+}
+module.exports.linguaRichiesta = linguaRichiesta;

@@ -7,7 +7,8 @@ const express = require("express");
 const db = require("./db");
 const config = require("./config");
 const S = require("./security");
-const { testo, asincrona } = require("./util");
+const U = require("./util");
+const { testo, asincrona } = U;
 const { controllaPassword } = require("./routes-auth");
 
 const { HttpError } = S;
@@ -36,7 +37,7 @@ const soloAdmin = (req, res, next) => (req.utente.ruolo === "admin" ? next() : r
 
 const nomeScuola = (u) => (db.prepare("SELECT nome FROM scuole WHERE id = ?").get(u.scuola_id) || {}).nome || null;
 const pubblico = (u) => ({ id: u.id, scuola: nomeScuola(u), email: u.email, nome: u.nome, cognome: u.cognome, classe: u.classe,
-    admin: u.ruolo === "admin", creato_il: u.creato_il, consenso_il: u.consenso_il, consenso_versione: u.consenso_versione });
+    admin: u.ruolo === "admin", lingua: u.lingua || "it", rappresentante: !!u.rappresentante, moduli: require("./modules").moduliScuola(u.scuola_id), creato_il: u.creato_il, consenso_il: u.consenso_il, consenso_versione: u.consenso_versione });
 
 const router = express.Router();
 router.use(richiediLogin);
@@ -59,10 +60,17 @@ router.get("/", (req, res) => {
 router.patch("/", (req, res) => {
     const b = req.body || {};
     const nome = testo(b.nome, "Nome", 1, 60), cognome = testo(b.cognome, "Cognome", 1, 60);
-    const classe = b.classe ? testo(b.classe, "Classe", 2, 6).toUpperCase() : null;
-    if (classe && !/^[1-5]ª[A-Z0-9]{1,3}$/.test(classe)) throw new HttpError(400, "Classe non valida.");
+    const classe = U.classe(b.classe);
     db.prepare("UPDATE utenti SET nome = ?, cognome = ?, classe = ? WHERE id = ?").run(nome, cognome, classe, req.utente.id);
     res.json({ ok: true });
+});
+
+// Interface language (IT/EN): also used for e-mails and notifications
+router.put("/lingua", (req, res) => {
+    const l = (req.body || {}).lingua;
+    if (!["it", "en"].includes(l)) throw new HttpError(400, "Lingua non valida.");
+    db.prepare("UPDATE utenti SET lingua = ? WHERE id = ?").run(l, req.utente.id);
+    res.json({ ok: true, lingua: l });
 });
 
 // Cambio password (richiede la vecchia; chiude le altre sessioni)
@@ -70,7 +78,7 @@ router.post("/password", asincrona(async (req, res) => {
     const b = req.body || {};
     if (typeof b.vecchia !== "string" || !(await S.verificaPassword(b.vecchia, req.utente.pw_hash)))
         throw new HttpError(400, "La password attuale non è corretta.");
-    controllaPassword(b.nuova, req.utente.email);
+    await controllaPassword(b.nuova, { email: req.utente.email, nome: req.utente.nome, cognome: req.utente.cognome });
     const hash = await S.hashPassword(b.nuova);
     db.prepare("UPDATE utenti SET pw_hash = ? WHERE id = ?").run(hash, req.utente.id);
     const mia = S.sha256(S.leggiCookie(req, S.NOME_COOKIE));
